@@ -22,7 +22,7 @@ You can customize extension-to-folder mappings via the built-in settings editor.
 1. Clone or download this repository and navigate to the folder:
 
     ```bash
-    cd c:\Users\Kahilu\Desktop\pythonProject
+    cd FileType-Organiser
     ```
 
 2. Run the app:

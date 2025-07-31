@@ -14,60 +14,149 @@ def get_app_dir():
         return os.path.dirname(os.path.abspath(__file__))
 
 # Default extension map content
-DEFAULT_EXTENSION_MAP = """PDF=Documents
-DOC=Documents
-DOCX=Documents
-TXT=Documents
-XLS=Documents
-XLSX=Documents
-XLSB=Documents
-PPT=Documents
-PPTX=Documents
-ODT=Documents
-RTF=Documents
-JPG=Images
-JPEG=Images
-PNG=Images
-GIF=Images
-BMP=Images
-TIFF=Images
-SVG=Images
-WEBP=Images
-ICO=Images
-MP4=Videos
-AVI=Videos
-MOV=Videos
-WMV=Videos
-FLV=Videos
-MKV=Videos
-WEBM=Videos
-MP3=Audio
-WAV=Audio
-FLAC=Audio
-AAC=Audio
-OGG=Audio
-WMA=Audio
-M4A=Audio
-ZIP=Archives
-RAR=Archives
-7Z=Archives
-TAR=Archives
-GZ=Archives
-PY=Code
-JS=Code
-HTML=Code
-CSS=Code
-CPP=Code
-C=Code
-JAVA=Code
-PHP=Code
-RB=Code
-GO=Code
-EXE=Applications
-MSI=Applications
-APP=Applications
-DEB=Applications
-RPM=Applications
+DEFAULT_EXTENSION_MAP = """
+PDF=Documents/PDF Files
+DOC=Documents/Word Files
+DOCX=Documents/Word Files
+TXT=Documents/Text Files
+XLS=Documents/Excel Files
+XLSX=Documents/Excel Files
+XLSB=Documents/Excel Files
+PPT=Documents/PowerPoint Files
+PPTX=Documents/PowerPoint Files
+ODT=Documents/OpenDocument Files
+ODS=Documents/OpenDocument Files
+CSV=Documents/CSV Files
+RTF=Documents/Text Files
+MD=Documents/Markdown Files
+LOG=Documents/Log Files
+EPUB=Documents/eBooks
+MOBI=Documents/eBooks
+CBZ=Documents/Comic Books
+CBR=Documents/Comic Books
+
+JPG=Images/JPG Images
+JPEG=Images/JPG Images
+PNG=Images/PNG Images
+GIF=Images/GIF Images
+BMP=Images/BMP Images
+SVG=Images/SVG Images
+WEBP=Images/WEBP Images
+TIFF=Images/TIFF Images
+ICO=Images/Icon Files
+HEIC=Images/HEIC Images
+RAW=Images/RAW Images
+CR2=Images/RAW Images
+NEF=Images/RAW Images
+ARW=Images/RAW Images
+DNG=Images/RAW Images
+
+MP4=Videos/MP4 Videos
+MKV=Videos/MKV Videos
+AVI=Videos/AVI Videos
+MOV=Videos/MOV Videos
+WMV=Videos/WMV Videos
+FLV=Videos/FLV Videos
+WEBM=Videos/WEBM Videos
+MPEG=Videos/MPEG Videos
+MPG=Videos/MPEG Videos
+3GP=Videos/3GP Videos
+M4V=Videos/M4V Videos
+TS=Videos/TS Videos
+VOB=Videos/VOB Videos
+OGV=Videos/OGV Videos
+F4V=Videos/F4V Videos
+
+MP3=Audio/MP3 Audio
+WAV=Audio/WAV Audio
+AAC=Audio/AAC Audio
+FLAC=Audio/FLAC Audio
+OGG=Audio/OGG Audio
+M4A=Audio/M4A Audio
+WMA=Audio/WMA Audio
+AMR=Audio/AMR Audio
+AIF=Audio/AIF Audio
+AIFF=Audio/AIF Audio
+APE=Audio/APE Audio
+OPUS=Audio/OPUS Audio
+MID=Audio/MIDI Audio
+MIDI=Audio/MIDI Audio
+
+ZIP=Archives/ZIP Archives
+RAR=Archives/RAR Archives
+7Z=Archives/7Z Archives
+TAR=Archives/TAR Archives
+GZ=Archives/GZ Archives
+BZ2=Archives/BZ2 Archives
+XZ=Archives/XZ Archives
+ISO=Archives/ISO Archives
+CAB=Archives/CAB Archives
+ARJ=Archives/ARJ Archives
+LZH=Archives/LZH Archives
+ACE=Archives/ACE Archives
+Z=Archives/Z Archives
+JAR=Archives/JAR Archives
+
+PY=Code/Python
+JS=Code/JavaScript
+JAVA=Code/Java
+CPP=Code/C++
+C=Code/C
+CS=Code/CSharp
+HTML=Code/HTML
+CSS=Code/CSS
+PHP=Code/PHP
+RB=Code/Ruby
+GO=Code/Go
+RS=Code/Rust
+TS=Code/TypeScript
+SH=Code/Shell
+BAT=Code/Batch
+PL=Code/Perl
+SWIFT=Code/Swift
+KOTLIN=Code/Kotlin
+SCALA=Code/Scala
+R=Code/R
+IPYNB=Code/Jupyter
+JSON=Code/JSON
+XML=Code/XML
+YML=Code/YAML
+YAML=Code/YAML
+ASP=Code/ASP
+ASPX=Code/ASP.NET
+VBS=Code/VBScript
+SQL=Code/SQL
+LUA=Code/Lua
+H=Code/C-Headers
+HPP=Code/C++-Headers
+
+EXE=Applications/Windows Executables
+MSI=Applications/Windows Installers
+APK=Applications/Android Packages
+APPX=Applications/Windows App Packages
+DMG=Applications/Mac Installers
+PKG=Applications/Mac Packages
+APP=Applications/Mac Apps
+IPA=Applications/iOS Apps
+
+TTF=Fonts/TrueType
+OTF=Fonts/OpenType
+FON=Fonts/Bitmap
+WOFF=Fonts/Web Open Font
+WOFF2=Fonts/Web Open Font 2
+EOT=Fonts/Embedded OpenType
+PFA=Fonts/PostScript
+PFB=Fonts/PostScript
+
+KEY=Presentations/Keynote
+ODP=Presentations/OpenDocument
+NUMBERS=Spreadsheets/Numbers
+XLSM=Spreadsheets/Excel Macro
+
+AI=VectorGraphics/Illustrator
+EPS=VectorGraphics/EPS
+CDR=VectorGraphics/CorelDRAW
+PSD=VectorGraphics/Photoshop
 """
 
 def ensure_extension_map(filepath):
@@ -97,18 +186,17 @@ class ModernFolderOrganizer:
         
     def setup_window(self):
         self.root.title("✨ Modern Folder Organizer")
-        self.root.geometry("600x400")
+        self.root.geometry("600x450")  # Fixed dimensions
         self.root.configure(bg='#1a1a1a')
-        self.root.resizable(True, True)
+        self.root.resizable(False, False)  # Disable resizing
         
         # Center the window
         self.root.update_idletasks()
         x = (self.root.winfo_screenwidth() // 2) - (600 // 2)
-        y = (self.root.winfo_screenheight() // 2) - (400 // 2)
-        self.root.geometry(f"600x400+{x}+{y}")
+        y = (self.root.winfo_screenheight() // 2) - (450 // 2)
+        self.root.geometry(f"600x450+{x}+{y}")
         
-        # Set minimum size
-        self.root.minsize(500, 350)
+        # Remove minsize setting as it's no longer needed
         
     def setup_styles(self):
         style = ttk.Style()
@@ -148,35 +236,59 @@ class ModernFolderOrganizer:
     def create_widgets(self):
         # Main container with gradient effect
         main_frame = tk.Frame(self.root, bg='#1a1a1a')
-        main_frame.pack(fill='both', expand=True, padx=20, pady=20)
+        main_frame.pack(fill='both', expand=True, padx=20, pady=(20, 10))
+        
+        # Footer first - pack at bottom
+        footer_frame = tk.Frame(main_frame, bg='#1a1a1a')
+        footer_frame.pack(side='bottom', fill='x', pady=(5, 10))
+        
+        # Tip label
+        footer_label = tk.Label(footer_frame,
+                               text="💡 Tip: Customize file organization rules in Settings",
+                               font=('Segoe UI', 9),
+                               fg='#666666',
+                               bg='#1a1a1a')
+        footer_label.pack(anchor='center')
+
+        # Separator line for visual distinction
+        separator = tk.Frame(footer_frame, height=1, bg='#333333')
+        separator.pack(fill='x', pady=(5, 3))
+
+        # Credit label - made more prominent and always visible
+        credit_label = tk.Label(footer_frame,
+                               text="Made by Kahilu Chipango",
+                               font=('Segoe UI', 11, 'bold'),
+                               fg='#4a9eff',
+                               bg='#1a1a1a')
+        credit_label.pack(anchor='center')
         
         # Header section
         header_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        header_frame.pack(fill='x', pady=(0, 30))
+        header_frame.pack(fill='x', pady=(0, 20))
         
-        # Title with modern styling
+        # Title with modern styling - smaller to save space
         title_label = tk.Label(header_frame, 
                               text="📁 Folder Organizer",
-                              font=('Segoe UI', 28, 'bold'),
+                              font=('Segoe UI', 24, 'bold'),
                               fg='#ffffff',
                               bg='#1a1a1a')
         title_label.pack(anchor='center')
         
         subtitle_label = tk.Label(header_frame,
                                  text="Organize your files automatically by type and extension",
-                                 font=('Segoe UI', 12),
+                                 font=('Segoe UI', 11),
                                  fg='#a0a0a0',
                                  bg='#1a1a1a')
-        subtitle_label.pack(anchor='center', pady=(5, 0))
+        subtitle_label.pack(anchor='center', pady=(3, 0))
         
-        # Main content area
+        # Main content area - fill remaining space
         content_frame = tk.Frame(main_frame, bg='#2d2d2d', relief='flat', bd=1)
-        content_frame.pack(fill='both', expand=True, pady=(0, 20))
+        content_frame.pack(fill='both', expand=True, pady=(0, 10))
         content_frame.configure(highlightbackground='#404040', highlightthickness=1)
         
         # Selected folder display
         folder_frame = tk.Frame(content_frame, bg='#2d2d2d')
-        folder_frame.pack(fill='x', padx=30, pady=(30, 20))
+        folder_frame.pack(fill='x', padx=30, pady=(20, 15))
         
         tk.Label(folder_frame,
                 text="Selected Folder:",
@@ -196,7 +308,7 @@ class ModernFolderOrganizer:
         
         # Button container
         button_frame = tk.Frame(content_frame, bg='#2d2d2d')
-        button_frame.pack(pady=20)
+        button_frame.pack(pady=15)
         
         # Modern buttons
         self.select_btn = ttk.Button(button_frame,
@@ -220,7 +332,7 @@ class ModernFolderOrganizer:
         
         # Progress section
         progress_frame = tk.Frame(content_frame, bg='#2d2d2d')
-        progress_frame.pack(fill='x', padx=30, pady=(20, 30))
+        progress_frame.pack(fill='x', padx=30, pady=(15, 20))
         
         self.progress_var = tk.StringVar(value="Ready to organize files")
         self.progress_label = tk.Label(progress_frame,
@@ -235,17 +347,6 @@ class ModernFolderOrganizer:
                                            style='TProgressbar',
                                            length=540)
         self.progress_bar.pack(fill='x', pady=(10, 0))
-        
-        # Footer
-        footer_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        footer_frame.pack(fill='x')
-        
-        footer_label = tk.Label(footer_frame,
-                               text="💡 Tip: Customize file organization rules in Settings",
-                               font=('Segoe UI', 9),
-                               fg='#666666',
-                               bg='#1a1a1a')
-        footer_label.pack(anchor='center')
         
         # Initialize variables
         self.selected_folder = None
