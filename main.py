@@ -6,6 +6,13 @@ import sys
 import threading
 from datetime import datetime
 
+# Add import for drag and drop
+try:
+    from tkinterdnd2 import DND_FILES, TkinterDnD
+    DND_AVAILABLE = True
+except ImportError:
+    DND_AVAILABLE = False
+
 # Get the directory where the script or exe is located
 def get_app_dir():
     if getattr(sys, 'frozen', False):
@@ -157,6 +164,19 @@ AI=VectorGraphics/Illustrator
 EPS=VectorGraphics/EPS
 CDR=VectorGraphics/CorelDRAW
 PSD=VectorGraphics/Photoshop
+SVGZ=VectorGraphics/SVG Compressed
+SVGZ=VectorGraphics/SVG Compressed
+SVG=VectorGraphics/SVG
+PDF=VectorGraphics/PDF
+
+
+# Add more extensions as needed
+# You can add more extensions and their corresponding folders here
+# Example:
+# TXT=Documents/Text Files
+# TXT=Documents/Text Files
+# MP3=Audio/MP3 Audio
+# 
 """
 
 def ensure_extension_map(filepath):
@@ -179,24 +199,26 @@ def load_extension_map(filepath):
 
 class ModernFolderOrganizer:
     def __init__(self):
-        self.root = tk.Tk()
+        # Use TkinterDnD.Tk if available, else fallback to tk.Tk
+        if DND_AVAILABLE:
+            self.root = TkinterDnD.Tk()
+        else:
+            self.root = tk.Tk()
         self.setup_window()
         self.create_widgets()
         self.setup_styles()
         
     def setup_window(self):
         self.root.title("✨ Modern Folder Organizer")
-        self.root.geometry("600x450")  # Fixed dimensions
+        self.root.geometry("650x500")  # Slightly larger for better drag area
         self.root.configure(bg='#1a1a1a')
-        self.root.resizable(False, False)  # Disable resizing
+        self.root.resizable(False, False)
         
         # Center the window
         self.root.update_idletasks()
-        x = (self.root.winfo_screenwidth() // 2) - (600 // 2)
-        y = (self.root.winfo_screenheight() // 2) - (450 // 2)
-        self.root.geometry(f"600x450+{x}+{y}")
-        
-        # Remove minsize setting as it's no longer needed
+        x = (self.root.winfo_screenwidth() // 2) - (650 // 2)
+        y = (self.root.winfo_screenheight() // 2) - (500 // 2)
+        self.root.geometry(f"650x500+{x}+{y}")
         
     def setup_styles(self):
         style = ttk.Style()
@@ -225,7 +247,6 @@ class ModernFolderOrganizer:
                  background=[('active', '#545b62'),
                            ('pressed', '#495057')])
         
-        # Use the default TProgressbar style to avoid layout errors
         style.configure('TProgressbar',
                        background='#4a9eff',
                        troughcolor='#2d2d2d',
@@ -237,6 +258,9 @@ class ModernFolderOrganizer:
         # Main container with gradient effect
         main_frame = tk.Frame(self.root, bg='#1a1a1a')
         main_frame.pack(fill='both', expand=True, padx=20, pady=(20, 10))
+
+        # Enhanced Drag and Drop area
+        self.create_drag_drop_area(main_frame)
         
         # Footer first - pack at bottom
         footer_frame = tk.Frame(main_frame, bg='#1a1a1a')
@@ -254,7 +278,7 @@ class ModernFolderOrganizer:
         separator = tk.Frame(footer_frame, height=1, bg='#333333')
         separator.pack(fill='x', pady=(5, 3))
 
-        # Credit label - made more prominent and always visible
+        # Credit label
         credit_label = tk.Label(footer_frame,
                                text="Made by Kahilu Chipango",
                                font=('Segoe UI', 11, 'bold'),
@@ -266,7 +290,7 @@ class ModernFolderOrganizer:
         header_frame = tk.Frame(main_frame, bg='#1a1a1a')
         header_frame.pack(fill='x', pady=(0, 20))
         
-        # Title with modern styling - smaller to save space
+        # Title with modern styling
         title_label = tk.Label(header_frame, 
                               text="📁 Folder Organizer",
                               font=('Segoe UI', 24, 'bold'),
@@ -281,7 +305,7 @@ class ModernFolderOrganizer:
                                  bg='#1a1a1a')
         subtitle_label.pack(anchor='center', pady=(3, 0))
         
-        # Main content area - fill remaining space
+        # Main content area
         content_frame = tk.Frame(main_frame, bg='#2d2d2d', relief='flat', bd=1)
         content_frame.pack(fill='both', expand=True, pady=(0, 10))
         content_frame.configure(highlightbackground='#404040', highlightthickness=1)
@@ -302,7 +326,7 @@ class ModernFolderOrganizer:
                                     font=('Segoe UI', 10),
                                     fg='#4a9eff',
                                     bg='#2d2d2d',
-                                    wraplength=500,
+                                    wraplength=550,
                                     justify='left')
         self.folder_label.pack(anchor='w', pady=(5, 0))
         
@@ -345,11 +369,179 @@ class ModernFolderOrganizer:
         self.progress_bar = ttk.Progressbar(progress_frame,
                                            mode='indeterminate',
                                            style='TProgressbar',
-                                           length=540)
+                                           length=590)
         self.progress_bar.pack(fill='x', pady=(10, 0))
         
         # Initialize variables
         self.selected_folder = None
+        
+    def create_drag_drop_area(self, parent):
+        """Create an enhanced drag and drop area"""
+        if DND_AVAILABLE:
+            # Main drag and drop container
+            self.dnd_container = tk.Frame(parent, bg='#1a1a1a')
+            self.dnd_container.pack(fill='x', pady=(0, 15))
+            
+            # Drag and drop frame with enhanced styling
+            self.dnd_frame = tk.Frame(self.dnd_container, 
+                                     bg='#23272e', 
+                                     height=80, 
+                                     bd=2, 
+                                     relief='ridge',
+                                     highlightbackground='#4a9eff',
+                                     highlightthickness=2)
+            self.dnd_frame.pack(fill='x', padx=10)
+            self.dnd_frame.pack_propagate(False)  # Maintain fixed height
+            
+            # Inner content frame
+            inner_frame = tk.Frame(self.dnd_frame, bg='#23272e')
+            inner_frame.pack(expand=True, fill='both')
+            
+            # Main drag text
+            self.dnd_main_label = tk.Label(inner_frame, 
+                                          text="📁 Drag & Drop Folder Here", 
+                                          font=('Segoe UI', 14, 'bold'), 
+                                          fg='#4a9eff', 
+                                          bg='#23272e')
+            self.dnd_main_label.pack(expand=True)
+            
+            # Subtitle
+            self.dnd_sub_label = tk.Label(inner_frame,
+                                         text="Or use the 'Select Folder' button below",
+                                         font=('Segoe UI', 10),
+                                         fg='#888888',
+                                         bg='#23272e')
+            self.dnd_sub_label.pack()
+            
+            # Register drop events for multiple components
+            self.dnd_frame.drop_target_register(DND_FILES)
+            self.dnd_frame.dnd_bind('<<Drop>>', self.on_drop_folder)
+            self.dnd_frame.dnd_bind('<<DragEnter>>', self.on_drag_enter)
+            self.dnd_frame.dnd_bind('<<DragLeave>>', self.on_drag_leave)
+            
+            # Also register for inner components
+            inner_frame.drop_target_register(DND_FILES)
+            inner_frame.dnd_bind('<<Drop>>', self.on_drop_folder)
+            inner_frame.dnd_bind('<<DragEnter>>', self.on_drag_enter)
+            inner_frame.dnd_bind('<<DragLeave>>', self.on_drag_leave)
+            
+            self.dnd_main_label.drop_target_register(DND_FILES)
+            self.dnd_main_label.dnd_bind('<<Drop>>', self.on_drop_folder)
+            self.dnd_main_label.dnd_bind('<<DragEnter>>', self.on_drag_enter)
+            self.dnd_main_label.dnd_bind('<<DragLeave>>', self.on_drag_leave)
+            
+        else:
+            # Fallback message when drag and drop is not available
+            fallback_frame = tk.Frame(parent, bg='#2d2d2d', height=60, bd=1, relief='ridge')
+            fallback_frame.pack(fill='x', padx=10, pady=(0, 15))
+            fallback_label = tk.Label(fallback_frame, 
+                                     text="⚠️  Drag & Drop not available. Please use 'Select Folder' button.", 
+                                     font=('Segoe UI', 11), 
+                                     fg='#ffa500', 
+                                     bg='#2d2d2d')
+            fallback_label.pack(expand=True)
+            
+    def on_drag_enter(self, event):
+        """Handle drag enter event - change appearance"""
+        if DND_AVAILABLE and hasattr(self, 'dnd_frame'):
+            self.dnd_frame.configure(bg='#2d4a3e', highlightbackground='#5cb85c')
+            self.dnd_main_label.configure(text="📂 Drop Folder Here!", fg='#5cb85c', bg='#2d4a3e')
+            self.dnd_sub_label.configure(fg='#aaaaaa', bg='#2d4a3e')
+            
+    def on_drag_leave(self, event):
+        """Handle drag leave event - restore appearance"""
+        if DND_AVAILABLE and hasattr(self, 'dnd_frame'):
+            self.dnd_frame.configure(bg='#23272e', highlightbackground='#4a9eff')
+            self.dnd_main_label.configure(text="📁 Drag & Drop Folder Here", fg='#4a9eff', bg='#23272e')
+            self.dnd_sub_label.configure(fg='#888888', bg='#23272e')
+            
+    def on_drop_folder(self, event):
+        """Enhanced drop handler with better error handling and feedback"""
+        try:
+            # Handle the dropped data
+            dropped = event.data.strip()
+            
+            # Handle multiple files/folders (take the first folder)
+            if '\n' in dropped or ' ' in dropped and '{' in dropped:
+                # Parse multiple items or spaces in paths
+                items = []
+                if dropped.startswith('{'):
+                    # Windows style with braces
+                    import re
+                    items = re.findall(r'{([^}]+)}', dropped)
+                else:
+                    # Split by newlines or spaces
+                    items = dropped.replace('\n', ' ').split()
+                
+                # Find the first directory
+                for item in items:
+                    item = item.strip('{}')
+                    if os.path.isdir(item):
+                        dropped = item
+                        break
+            else:
+                # Single item, remove braces if present
+                dropped = dropped.strip('{}')
+            
+            # Validate that it's a directory
+            if not os.path.exists(dropped):
+                self.show_drop_error("Path does not exist!")
+                return
+                
+            if not os.path.isdir(dropped):
+                self.show_drop_error("Please drop a folder, not a file!")
+                return
+            
+            # Check if folder is accessible
+            try:
+                os.listdir(dropped)
+            except PermissionError:
+                self.show_drop_error("Cannot access this folder! Permission denied.")
+                return
+            except Exception as e:
+                self.show_drop_error(f"Cannot access folder: {str(e)}")
+                return
+            
+            # Success - set the folder
+            self.selected_folder = dropped
+            display_path = dropped
+            if len(display_path) > 70:
+                display_path = "..." + display_path[-67:]
+            self.folder_var.set(display_path)
+            self.organize_btn.configure(state='normal')
+            self.progress_var.set("Folder selected via Drag & Drop - Ready to organize!")
+            
+            # Visual feedback for successful drop
+            if DND_AVAILABLE and hasattr(self, 'dnd_frame'):
+                # Briefly show success state
+                self.dnd_frame.configure(bg='#2d4a2d', highlightbackground='#28a745')
+                self.dnd_main_label.configure(text="✅ Folder Selected!", fg='#28a745', bg='#2d4a2d')
+                self.dnd_sub_label.configure(text=f"Ready to organize: {os.path.basename(dropped)}", fg='#aaaaaa', bg='#2d4a2d')
+                
+                # Reset to normal after 2 seconds
+                self.root.after(2000, self.reset_drag_area)
+            
+        except Exception as e:
+            self.show_drop_error(f"Error processing drop: {str(e)}")
+            
+    def show_drop_error(self, message):
+        """Show error feedback in drag area and messagebox"""
+        if DND_AVAILABLE and hasattr(self, 'dnd_frame'):
+            self.dnd_frame.configure(bg='#4a2d2d', highlightbackground='#dc3545')
+            self.dnd_main_label.configure(text="❌ Error!", fg='#dc3545', bg='#4a2d2d')
+            self.dnd_sub_label.configure(text=message, fg='#aaaaaa', bg='#4a2d2d')
+            
+            # Reset after 3 seconds
+            self.root.after(3000, self.reset_drag_area)
+        
+        messagebox.showwarning("Invalid Drop", message)
+        
+    def reset_drag_area(self):
+        """Reset drag area to normal appearance"""
+        if DND_AVAILABLE and hasattr(self, 'dnd_frame'):
+            self.dnd_frame.configure(bg='#23272e', highlightbackground='#4a9eff')
+            self.dnd_main_label.configure(text="📁 Drag & Drop Folder Here", fg='#4a9eff', bg='#23272e')
+            self.dnd_sub_label.configure(text="Or use the 'Select Folder' button below", fg='#888888', bg='#23272e')
         
     def select_folder(self):
         folder_selected = filedialog.askdirectory(
@@ -359,8 +551,8 @@ class ModernFolderOrganizer:
         if folder_selected:
             self.selected_folder = folder_selected
             display_path = folder_selected
-            if len(display_path) > 60:
-                display_path = "..." + display_path[-57:]
+            if len(display_path) > 70:
+                display_path = "..." + display_path[-67:]
             self.folder_var.set(display_path)
             self.organize_btn.configure(state='normal')
             self.progress_var.set("Folder selected - Ready to organize!")
