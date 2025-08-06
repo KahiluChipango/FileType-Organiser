@@ -6,10 +6,12 @@ You can customize extension-to-folder mappings via the built-in settings editor.
 ## ✨ Features
 
 - Select any folder to organize
-- Automatically sorts files into folders by extension/type
+- **Drag & Drop** a folder anywhere in the window to select it
+- Automatically sorts files into folders by extension/type (with nested folders, e.g. `Documents/PDF Files`)
 - Edit extension mappings in-app (Settings)
 - Modern, user-friendly interface (Tkinter)
 - Remembers and creates `extension_map.txt` if missing
+- Enhanced error handling and feedback for drag & drop
 
 ## 🚀 Getting Started
 
@@ -25,7 +27,20 @@ You can customize extension-to-folder mappings via the built-in settings editor.
     cd FileType-Organiser
     ```
 
-2. Run the app:
+2. Install requirements:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+   > **Note:**  
+   > The app uses `tkinterdnd2` for drag-and-drop support.  
+   > If you see a warning about drag & drop not being available, install it with:
+   > ```
+   > pip install tkinterdnd2
+   > ```
+
+3. Run the app:
 
     ```bash
     python main.py
@@ -36,7 +51,8 @@ You can customize extension-to-folder mappings via the built-in settings editor.
 ## 🖥️ Usage
 
 1. **Select a folder**  
-   Click "🗂️  Select Folder" and choose the folder you want to organize.
+   - Click "🗂️  Select Folder" and choose the folder you want to organize, **or**
+   - **Drag & Drop** a folder anywhere in the app window.
 
 2. **Organize**  
    Click "✨  Organize Files" to sort files by type.
@@ -49,12 +65,12 @@ You can customize extension-to-folder mappings via the built-in settings editor.
 - The file `extension_map.txt` (in the same folder as the app) controls how extensions are grouped.
 - Format:  
   ```
-  EXT=FolderName
+  EXT=FolderName/SubFolder
   ```
   Example:
   ```
-  PDF=Documents
-  MP4=Videos
+  PDF=Documents/PDF Files
+  MP4=Videos/MP4 Videos
   ```
 - Edit this file directly or use the Settings window in the app.
 - If `extension_map.txt` does not exist, it will be created automatically with defaults.
