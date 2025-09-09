@@ -595,10 +595,15 @@ class ModernFolderOrganizer:
                 if not extension:
                     files_skipped += 1
                     continue
-                    
+
+                # Create the master folder inside the selected folder
+                master_folder = os.path.join(self.selected_folder, "Organised Files - FTO")
+                if not os.path.exists(master_folder):
+                    os.makedirs(master_folder)
+
                 folder_name = ext_map.get(extension, f"Other_{extension}")
-                dest_folder = os.path.join(self.selected_folder, folder_name)
-                
+                dest_folder = os.path.join(master_folder, folder_name)
+
                 if not os.path.exists(dest_folder):
                     os.makedirs(dest_folder)
                     
