@@ -1,8 +1,8 @@
 # version.txt
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 1, 0),
-    prodvers=(1, 0, 1, 0),
+    filevers=(2, 0, 0, 0),
+    prodvers=(2, 0, 0, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x4,
@@ -17,13 +17,13 @@ VSVersionInfo(
           '040904B0',
           [
             StringStruct('CompanyName', 'Kahilu Chipango'),
-            StringStruct('FileDescription', 'Modern Folder Organizer'),
-            StringStruct('FileVersion', '1.0.1'),
-            StringStruct('InternalName', 'FolderOrganizer'),
+            StringStruct('FileDescription', 'Modern Folder Organizer Pro'),
+            StringStruct('FileVersion', '2.0.0'),
+            StringStruct('InternalName', 'FolderOrganizerPro'),
             StringStruct('LegalCopyright', '© 2025 Kahilu Chipango'),
-            StringStruct('OriginalFilename', 'FolderOrganizer.exe'),
-            StringStruct('ProductName', 'Folder Organizer Tool'),
-            StringStruct('ProductVersion', '1.0.1')
+            StringStruct('OriginalFilename', 'FolderOrganizerPro.exe'),
+            StringStruct('ProductName', 'Folder Organizer Pro'),
+            StringStruct('ProductVersion', '2.0.0')
           ]
         )
       ]
