@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FileType Organizer Pro — Design Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #ededea; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+  /* DS tokens */
+  :root {
+    --bg: #f8f8f5;
+    --surface: #ffffff;
+    --surface2: #f2f2ef;
+    --border: #e4e4dc;
+    --border2: #d0d0c8;
+    --txt1: #1a1a17;
+    --txt2: #5c5c56;
+    --txt3: #9b9b93;
+    --accent: #1a6cf0;
+    --accent-light: #e8f0fe;
+    --accent-hover: #1459d0;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06);
+  }
+</style>
+</head>
+<body>
+<script type="text/babel">
+
+const { useState } = React;
+
+/* ─── Design Tokens ─── */
+const T = {
+  bg: '#f8f8f5', surface: '#ffffff', surface2: '#f2f2ef',
+  border: '#e4e4dc', border2: '#d0d0c8',
+  txt1: '#1a1a17', txt2: '#5c5c56', txt3: '#9b9b93',
+  accent: '#1a6cf0', accentLight: '#e8f0fe', accentHover: '#1459d0',
+  green: '#16a34a', greenLight: '#dcfce7',
+  amber: '#d97706', amberLight: '#fef3c7',
+  red: '#dc2626', redLight: '#fee2e2',
+};
+
+/* ─── Shared primitives ─── */
+const Btn = ({ children, variant='primary', size='md', onClick, disabled, style={} }) => {
+  const [hov, setHov] = useState(false);
+  const base = {
+    display:'inline-flex', alignItems:'center', gap:6, border:'none',
+    cursor: disabled ? 'default' : 'pointer', fontFamily:'inherit',
+    fontWeight:600, letterSpacing:'-0.01em', transition:'all .15s',
+    whiteSpace:'nowrap', outline:'none',
+  };
+  const sizes = { sm: {fontSize:12,padding:'6px 12px',borderRadius:8}, md: {fontSize:13,padding:'9px 18px',borderRadius:10}, lg: {fontSize:14,padding:'12px 24px',borderRadius:12} };
+  const variants = {
+    primary: { background: hov ? T.accentHover : T.accent, color:'#fff', opacity: disabled ? .45 : 1 },
+    secondary: { background: hov ? T.surface2 : T.surface, color: T.txt1, border:`1px solid ${T.border}` },
+    ghost: { background: hov ? T.surface2 : 'transparent', color: T.txt2 },
+    danger: { background: hov ? '#b91c1c' : T.red, color:'#fff' },
+    success: { background: hov ? '#15803d' : T.green, color:'#fff' },
+  };
+  return <button style={{...base,...sizes[size],...variants[variant],...style}} onClick={onClick}
+    onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} disabled={disabled}>{children}</button>;
+};
+
+const Tag = ({ children, color='blue' }) => {
+  const colors = {
+    blue:{bg:T.accentLight,text:T.accent}, green:{bg:T.greenLight,text:T.green},
+    amber:{bg:T.amberLight,text:T.amber}, red:{bg:T.redLight,text:T.red},
+    gray:{bg:T.surface2,text:T.txt2},
+  };
+  return <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 9px',borderRadius:99,fontSize:11,fontWeight:600,...colors[color]}}>{children}</span>;
+};
+
+const Divider = () => <div style={{height:1,background:T.border,margin:'0'}} />;
+
+/* file type icon */
+const FileIcon = ({ ext, color }) => (
+  <div style={{width:32,height:38,position:'relative',flexShrink:0}}>
+    <svg width="32" height="38" viewBox="0 0 32 38" fill="none">
+      <path d="M2 4C2 2.9 2.9 2 4 2H22L30 10V34C30 35.1 29.1 36 28 36H4C2.9 36 2 35.1 2 34V4Z" fill={color+'18'} stroke={color} strokeWidth="1.5"/>
+      <path d="M22 2L30 10H24C22.9 10 22 9.1 22 8V2Z" fill={color} opacity=".4"/>
+    </svg>
+    <span style={{position:'absolute',bottom:5,left:0,right:0,textAlign:'center',fontSize:7,fontWeight:700,color,fontFamily:'JetBrains Mono, monospace',letterSpacing:0}}>{ext}</span>
+  </div>
+);
+
+/* Category badge with icon */
+const CatRow = ({ icon, label, count, color }) => (
+  <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0'}}>
+    <div style={{width:32,height:32,borderRadius:8,background:color+'15',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0}}>{icon}</div>
+    <div style={{flex:1}}>
+      <div style={{fontSize:13,fontWeight:600,color:T.txt1}}>{label}</div>
+    </div>
+    <Tag color="gray">{count}</Tag>
+  </div>
+);
+
+/* Progress bar */
+const ProgressBar = ({ value, color=T.accent }) => (
+  <div style={{height:6,background:T.surface2,borderRadius:99,overflow:'hidden'}}>
+    <div style={{height:'100%',width:`${value}%`,background:color,borderRadius:99,transition:'width .3s'}} />
+  </div>
+);
+
+/* ─── Shared app shell ─── */
+const Shell = ({ children, width=720, height=580 }) => (
+  <div style={{width,height,background:T.bg,borderRadius:16,overflow:'hidden',display:'flex',flexDirection:'column',fontFamily:'Plus Jakarta Sans, sans-serif',position:'relative',boxShadow:'0 2px 8px rgba(0,0,0,.06)'}}>
+    {children}
+  </div>
+);
+
+/* ─── TOP NAV ─── */
+const TopNav = ({ active='home' }) => {
+  const items = [
+    { id:'home', label:'Organizer' },
+    { id:'stats', label:'Statistics' },
+    { id:'settings', label:'Settings' },
+  ];
+  return (
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 24px',borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0}}>
+      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <div style={{width:28,height:28,borderRadius:7,background:T.accent,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1.5" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1.5" fill="white" opacity=".6"/><rect x="1" y="8" width="5" height="5" rx="1.5" fill="white" opacity=".6"/><rect x="8" y="8" width="5" height="5" rx="1.5" fill="white" opacity=".4"/></svg>
+        </div>
+        <span style={{fontSize:14,fontWeight:700,color:T.txt1,letterSpacing:'-0.02em'}}>FileType Organizer</span>
+        <Tag color="blue">Pro</Tag>
+      </div>
+      <div style={{display:'flex',gap:2}}>
+        {items.map(i=>(
+          <div key={i.id} style={{padding:'5px 12px',borderRadius:8,fontSize:13,fontWeight:500,color:active===i.id?T.accent:T.txt2,background:active===i.id?T.accentLight:'transparent',cursor:'pointer'}}>{i.label}</div>
+        ))}
+      </div>
+      <div style={{width:28,height:28,borderRadius:99,background:T.surface2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:T.txt2}}>KC</div>
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════
+   VARIATION A — Compact Single Panel
+═══════════════════════════════════════ */
+const VariantA_Home = () => {
+  const [hover, setHover] = useState(false);
+  return (
+    <Shell width={700} height={560}>
+      <TopNav active="home" />
+      <div style={{flex:1,display:'flex',flexDirection:'column',padding:'28px 32px',gap:20,overflowY:'auto'}}>
+        {/* Drop Zone */}
+        <div
+          onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
+          style={{border:`2px dashed ${hover?T.accent:T.border2}`,borderRadius:14,padding:'40px 32px',textAlign:'center',background:hover?T.accentLight:T.surface,transition:'all .2s',cursor:'pointer',flexShrink:0}}>
+          <div style={{width:52,height:52,borderRadius:14,background:hover?T.accent+'20':'#f2f2ef',margin:'0 auto 16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s'}}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={hover?T.accent:T.txt3} strokeWidth="1.8" strokeLinecap="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div style={{fontSize:15,fontWeight:700,color:hover?T.accent:T.txt1,marginBottom:6}}>Drop a folder here</div>
+          <div style={{fontSize:13,color:T.txt3,marginBottom:20}}>or browse your computer</div>
+          <Btn variant={hover?'primary':'secondary'} size="sm">Browse folder</Btn>
+        </div>
+
+        {/* Selected folder row */}
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:36,height:36,borderRadius:9,background:T.accentLight,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13,fontWeight:600,color:T.txt1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>~/Downloads/My Files</div>
+            <div style={{fontSize:11,color:T.txt3,marginTop:1}}>347 files · 2.4 GB</div>
+          </div>
+          <Tag color="green">Ready</Tag>
+        </div>
+
+        {/* Quick stats */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+          {[['Images','84 files',T.accent,'🖼'],['Documents','126 files',T.green,'📄'],['Videos','31 files',T.amber,'🎬']].map(([cat,count,color,icon])=>(
+            <div key={cat} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'14px 16px'}}>
+              <div style={{fontSize:18,marginBottom:8}}>{icon}</div>
+              <div style={{fontSize:20,fontWeight:800,color:T.txt1,letterSpacing:'-0.03em'}}>{count.split(' ')[0]}</div>
+              <div style={{fontSize:11,color:T.txt3,marginTop:2}}>{cat}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div style={{display:'flex',gap:10,marginTop:'auto'}}>
+          <Btn variant="secondary" size="md">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview
+          </Btn>
+          <Btn variant="secondary" size="md">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+            Undo Last
+          </Btn>
+          <Btn variant="primary" size="md" style={{marginLeft:'auto',paddingLeft:28,paddingRight:28}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Organize Now
+          </Btn>
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+/* ═══════════════════════════════════════
+   VARIATION B — Sidebar Layout
+═══════════════════════════════════════ */
+const VariantB_Home = () => {
+  const [hover, setHover] = useState(false);
+  const cats = [
+    {icon:'📄',label:'Documents',count:126,color:'#16a34a'},
+    {icon:'🖼',label:'Images',count:84,color:'#1a6cf0'},
+    {icon:'🎬',label:'Videos',count:31,color:'#7c3aed'},
+    {icon:'🎵',label:'Audio',count:18,color:'#db2777'},
+    {icon:'📦',label:'Archives',count:12,color:'#d97706'},
+    {icon:'💻',label:'Code',count:54,color:'#0891b2'},
+    {icon:'🔤',label:'Fonts',count:7,color:'#65a30d'},
+    {icon:'❓',label:'Other',count:15,color:'#9b9b93'},
+  ];
+  return (
+    <Shell width={880} height={560}>
+      <TopNav active="home" />
+      <div style={{flex:1,display:'flex',overflow:'hidden'}}>
+        {/* Sidebar */}
+        <div style={{width:220,borderRight:`1px solid ${T.border}`,background:T.surface,display:'flex',flexDirection:'column',flexShrink:0,overflowY:'auto'}}>
+          <div style={{padding:'16px 16px 8px',fontSize:11,fontWeight:700,color:T.txt3,letterSpacing:'0.06em',textTransform:'uppercase'}}>File Categories</div>
+          <div style={{padding:'0 8px',flex:1}}>
+            {cats.map(c=>(
+              <div key={c.label} style={{display:'flex',alignItems:'center',gap:9,padding:'7px 10px',borderRadius:8,cursor:'pointer'}}>
+                <div style={{width:28,height:28,borderRadius:7,background:c.color+'15',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,flexShrink:0}}>{c.icon}</div>
+                <div style={{flex:1,fontSize:13,fontWeight:500,color:T.txt1}}>{c.label}</div>
+                <span style={{fontSize:11,color:T.txt3,fontWeight:600}}>{c.count}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{padding:'12px 16px',borderTop:`1px solid ${T.border}`}}>
+            <div style={{fontSize:11,color:T.txt3,marginBottom:6}}>Extension map</div>
+            <Btn variant="ghost" size="sm" style={{width:'100%',justifyContent:'flex-start',gap:6,color:T.txt2,fontSize:12}}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M5.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+              Edit mappings
+            </Btn>
+          </div>
+        </div>
+
+        {/* Main */}
+        <div style={{flex:1,display:'flex',flexDirection:'column',padding:'24px 28px',gap:18,overflowY:'auto'}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:800,color:T.txt1,letterSpacing:'-0.03em'}}>Organize Files</div>
+            <div style={{fontSize:13,color:T.txt3,marginTop:3}}>Select a folder and sort files automatically by type</div>
+          </div>
+
+          {/* Drop zone */}
+          <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
+            style={{border:`2px dashed ${hover?T.accent:T.border2}`,borderRadius:14,padding:'32px 24px',textAlign:'center',background:hover?T.accentLight:T.surface,transition:'all .2s',cursor:'pointer'}}>
+            <div style={{width:44,height:44,borderRadius:12,background:hover?T.accent:T.surface2,margin:'0 auto 12px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={hover?'white':T.txt3} strokeWidth="1.8" strokeLinecap="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div style={{fontSize:14,fontWeight:700,color:hover?T.accent:T.txt1,marginBottom:4}}>Drop folder here to organize</div>
+            <div style={{fontSize:12,color:T.txt3}}>or <span style={{color:T.accent,fontWeight:600,cursor:'pointer'}}>browse</span> to choose a folder</div>
+          </div>
+
+          {/* Selected folder */}
+          <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'12px 16px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <div style={{width:34,height:34,borderRadius:9,background:T.accentLight,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:T.txt1}}>~/Downloads/My Files</div>
+                <div style={{fontSize:11,color:T.txt3,marginTop:1}}>347 files · 2.4 GB</div>
+              </div>
+              <Tag color="green">Ready</Tag>
+              <Btn variant="ghost" size="sm" style={{color:T.txt3,padding:'4px 8px'}}>✕</Btn>
+            </div>
+          </div>
+
+          {/* Options row */}
+          <div style={{display:'flex',gap:10}}>
+            {[['Rename duplicates','Enabled',T.green],['Recursive','Off',T.txt3],['Auto-organize','Off',T.txt3]].map(([label,val,color])=>(
+              <div key={label} style={{flex:1,background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,padding:'10px 14px'}}>
+                <div style={{fontSize:11,color:T.txt3,marginBottom:3}}>{label}</div>
+                <div style={{fontSize:12,fontWeight:700,color}}>{val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div style={{display:'flex',gap:8,marginTop:'auto'}}>
+            <Btn variant="secondary" size="md">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview
+            </Btn>
+            <Btn variant="primary" size="md" style={{marginLeft:'auto',paddingLeft:28,paddingRight:28}}>
+              Organize Now →
+            </Btn>
+          </div>
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+/* ═══════════════════════════════════════
+   SCREEN: Preview Mode
+═══════════════════════════════════════ */
+const Screen_Preview = () => {
+  const rows = [
+    {folder:'Documents / PDF Files', files:34, size:'142 MB', color:'#16a34a', icon:'📄', sample:['Annual Report 2024.pdf','Invoice_March.pdf','Contract_Draft.pdf']},
+    {folder:'Images / JPG Images', files:62, size:'820 MB', color:'#1a6cf0', icon:'🖼', sample:['IMG_4521.jpg','photo_edit.jpg','banner_final.jpg']},
+    {folder:'Videos / MP4 Videos', files:12, size:'1.1 GB', color:'#7c3aed', icon:'🎬', sample:['screen_rec.mp4','tutorial_01.mp4']},
+    {folder:'Code / Python', files:28, size:'4.2 MB', color:'#0891b2', icon:'💻', sample:['main.py','utils.py','config.py']},
+    {folder:'Archives / ZIP', files:8, size:'220 MB', color:'#d97706', icon:'📦', sample:['backup_jan.zip','assets.zip']},
+  ];
+  const [open, setOpen] = useState({0:true});
+  return (
+    <Shell width={720} height={600}>
+      <TopNav active="home" />
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        {/* Header */}
+        <div style={{padding:'20px 28px 16px',borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div>
+              <div style={{fontSize:16,fontWeight:800,color:T.txt1,letterSpacing:'-0.02em'}}>Preview Changes</div>
+              <div style={{fontSize:12,color:T.txt3,marginTop:2}}>347 files will be moved · 2.4 GB total</div>
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <Btn variant="secondary" size="sm">Cancel</Btn>
+              <Btn variant="primary" size="sm">Confirm & Organize</Btn>
+            </div>
+          </div>
+          {/* Summary pills */}
+          <div style={{display:'flex',gap:8,marginTop:14}}>
+            {[['347 files','blue'],['2.4 GB','blue'],['5 categories','gray'],['12 skipped','amber']].map(([l,c])=><Tag key={l} color={c}>{l}</Tag>)}
+          </div>
+        </div>
+
+        {/* Tree */}
+        <div style={{flex:1,overflowY:'auto',padding:'12px 16px'}}>
+          {rows.map((r,i)=>(
+            <div key={i} style={{marginBottom:4}}>
+              <div onClick={()=>setOpen(o=>({...o,[i]:!o[i]}))}
+                style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:10,background:T.surface,border:`1px solid ${T.border}`,cursor:'pointer',userSelect:'none'}}>
+                <span style={{fontSize:16}}>{r.icon}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600,color:T.txt1}}>{r.folder}</div>
+                </div>
+                <Tag color="gray">{r.files} files</Tag>
+                <span style={{fontSize:12,color:T.txt3,minWidth:60,textAlign:'right'}}>{r.size}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={T.txt3} strokeWidth="2" style={{transform:open[i]?'rotate(90deg)':'none',transition:'.15s'}}><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              {open[i] && (
+                <div style={{marginLeft:24,borderLeft:`2px solid ${T.border}`,paddingLeft:12,marginTop:2,marginBottom:4}}>
+                  {r.sample.map(f=>(
+                    <div key={f} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',fontSize:12,color:T.txt2}}>
+                      <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><rect x="0.5" y="0.5" width="9" height="11" rx="1.5" fill={r.color+'20'} stroke={r.color} strokeWidth="1"/></svg>
+                      {f}
+                    </div>
+                  ))}
+                  {r.files > r.sample.length && <div style={{padding:'4px 8px',fontSize:11,color:T.txt3}}>+{r.files - r.sample.length} more files</div>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+/* ═══════════════════════════════════════
+   SCREEN: Progress
+═══════════════════════════════════════ */
+const Screen_Progress = () => {
+  const steps = [
+    {label:'Scanning folder', done:true},
+    {label:'Creating folder structure', done:true},
+    {label:'Moving files', done:false, active:true},
+    {label:'Cleaning up', done:false},
+  ];
+  return (
+    <Shell width={700} height={500}>
+      <TopNav active="home" />
+      <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'32px 40px',gap:28}}>
+        {/* Spinner area */}
+        <div style={{textAlign:'center'}}>
+          <div style={{width:64,height:64,borderRadius:16,background:T.accentLight,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
+            </svg>
+          </div>
+          <div style={{fontSize:20,fontWeight:800,color:T.txt1,letterSpacing:'-0.03em',marginBottom:6}}>Organizing files…</div>
+          <div style={{fontSize:13,color:T.txt3}}>Moving 347 files into sorted categories</div>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{width:'100%'}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+            <span style={{fontSize:12,fontWeight:600,color:T.txt2}}>218 of 347 files</span>
+            <span style={{fontSize:12,color:T.txt3}}>63%</span>
+          </div>
+          <div style={{height:8,background:T.surface2,borderRadius:99,overflow:'hidden'}}>
+            <div style={{height:'100%',width:'63%',background:`linear-gradient(90deg,${T.accent},#5b8ff0)`,borderRadius:99}} />
+          </div>
+          <div style={{fontSize:11,color:T.txt3,marginTop:6}}>Currently moving: <span style={{color:T.txt2,fontWeight:500}}>Images / JPG Images</span> · 1.2 MB/s</div>
+        </div>
+
+        {/* Steps */}
+        <div style={{width:'100%',display:'flex',flexDirection:'column',gap:10}}>
+          {steps.map((s,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:12}}>
+              <div style={{width:22,height:22,borderRadius:99,border:`2px solid ${s.done?T.green:s.active?T.accent:T.border}`,background:s.done?T.green:s.active?T.accentLight:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all .3s'}}>
+                {s.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                {s.active && <div style={{width:8,height:8,borderRadius:99,background:T.accent}} />}
+              </div>
+              <div style={{fontSize:13,fontWeight:s.active?600:500,color:s.done?T.green:s.active?T.txt1:T.txt3}}>{s.label}</div>
+              {s.active && <div style={{marginLeft:'auto',fontSize:11,color:T.txt3}}>in progress…</div>}
+            </div>
+          ))}
+        </div>
+
+        <Btn variant="ghost" size="sm" style={{color:T.txt3}}>Cancel</Btn>
+      </div>
+    </Shell>
+  );
+};
+
+/* ═══════════════════════════════════════
+   SCREEN: Completion
+═══════════════════════════════════════ */
+const Screen_Complete = () => {
+  const stats = [
+    {label:'Files moved',value:'335',color:T.green},
+    {label:'Renamed (dupes)',value:'8',color:T.accent},
+    {label:'Skipped',value:'4',color:T.amber},
+    {label:'Total size',value:'2.4 GB',color:T.txt1},
+  ];
+  return (
+    <Shell width={700} height={500}>
+      <TopNav active="home" />
+      <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'32px 40px',gap:24}}>
+        {/* Success icon */}
+        <div style={{width:64,height:64,borderRadius:16,background:T.greenLight,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="2.2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div style={{textAlign:'center'}}>
+          <div style={{fontSize:22,fontWeight:800,color:T.txt1,letterSpacing:'-0.03em',marginBottom:6}}>Organization complete!</div>
+          <div style={{fontSize:13,color:T.txt3}}>All files have been sorted into <span style={{fontWeight:600,color:T.txt2}}>Organised Files - FTO</span></div>
+        </div>
+
+        {/* Stats grid */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:10,width:'100%'}}>
+          {stats.map(s=>(
+            <div key={s.label} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'14px 16px',textAlign:'center'}}>
+              <div style={{fontSize:22,fontWeight:800,color:s.color,letterSpacing:'-0.03em'}}>{s.value}</div>
+              <div style={{fontSize:11,color:T.txt3,marginTop:3}}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Output path */}
+        <div style={{width:'100%',background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,padding:'11px 16px',display:'flex',alignItems:'center',gap:10}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.txt3} strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span style={{fontSize:12,color:T.txt2,fontFamily:'JetBrains Mono, monospace',flex:1}}>~/Downloads/My Files/Organised Files - FTO</span>
+          <Btn variant="ghost" size="sm" style={{color:T.accent,fontSize:12,padding:'4px 10px'}}>Open</Btn>
+        </div>
+
+        <div style={{display:'flex',gap:10}}>
+          <Btn variant="secondary" size="md">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+            Undo
+          </Btn>
+          <Btn variant="primary" size="md">Organize another folder</Btn>
+        </div>
+
+        <div style={{fontSize:11,color:T.txt3}}>Completed at 14:32:07 · Apr 23 2026</div>
+      </div>
+    </Shell>
+  );
+};
+
+/* ═══════════════════════════════════════
+   SCREEN: Settings
+═══════════════════════════════════════ */
+const Screen_Settings = () => {
+  const [tab, setTab] = useState('general');
+  const tabs = ['general','patterns','mappings'];
+  const Toggle = ({on}) => (
+    <div style={{width:36,height:20,borderRadius:99,background:on?T.accent:T.border,position:'relative',cursor:'pointer',flexShrink:0,transition:'.2s'}}>
+      <div style={{width:16,height:16,borderRadius:99,background:'white',position:'absolute',top:2,left:on?18:2,transition:'.2s',boxShadow:'0 1px 3px rgba(0,0,0,.2)'}} />
+    </div>
+  );
+  return (
+    <Shell width={720} height={580}>
+      <TopNav active="settings" />
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        {/* Tab bar */}
+        <div style={{display:'flex',gap:0,padding:'12px 20px 0',borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0}}>
+          {tabs.map(t=>(
+            <div key={t} onClick={()=>setTab(t)} style={{padding:'8px 16px',fontSize:13,fontWeight:tab===t?700:500,color:tab===t?T.accent:T.txt2,borderBottom:tab===t?`2px solid ${T.accent}`:'2px solid transparent',cursor:'pointer',textTransform:'capitalize',transition:'.15s'}}>
+              {t==='general'?'General':t==='patterns'?'Exclude Patterns':'Extension Map'}
+            </div>
+          ))}
+        </div>
+
+        <div style={{flex:1,overflowY:'auto',padding:'24px 28px',display:'flex',flexDirection:'column',gap:0}}>
+          {tab==='general' && (
+            <div style={{display:'flex',flexDirection:'column',gap:16}}>
+              {/* Master folder */}
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,overflow:'hidden'}}>
+                <div style={{padding:'14px 18px',borderBottom:`1px solid ${T.border}`,fontSize:12,fontWeight:700,color:T.txt2,textTransform:'uppercase',letterSpacing:'0.04em'}}>Output</div>
+                <div style={{padding:'16px 18px',display:'flex',flexDirection:'column',gap:14}}>
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600,color:T.txt1}}>Master folder name</div>
+                      <div style={{fontSize:11,color:T.txt3,marginTop:2}}>All organized files are placed here</div>
+                    </div>
+                    <input defaultValue="Organised Files - FTO" style={{fontSize:12,fontFamily:'JetBrains Mono,monospace',padding:'7px 12px',border:`1px solid ${T.border}`,borderRadius:8,color:T.txt1,background:T.bg,width:200,outline:'none'}} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Behavior */}
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,overflow:'hidden'}}>
+                <div style={{padding:'14px 18px',borderBottom:`1px solid ${T.border}`,fontSize:12,fontWeight:700,color:T.txt2,textTransform:'uppercase',letterSpacing:'0.04em'}}>Behavior</div>
+                <div style={{display:'flex',flexDirection:'column'}}>
+                  {[
+                    ['Recursive organization','Also process files in subdirectories',false],
+                    ['Auto-organize','Monitor folder every 30s and auto-sort',false],
+                  ].map(([title,desc,on],i)=>(
+                    <div key={title} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 18px',borderBottom:i===0?`1px solid ${T.border}`:'none'}}>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:600,color:T.txt1}}>{title}</div>
+                        <div style={{fontSize:11,color:T.txt3,marginTop:2}}>{desc}</div>
+                      </div>
+                      <Toggle on={on} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Duplicates */}
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,overflow:'hidden'}}>
+                <div style={{padding:'14px 18px',borderBottom:`1px solid ${T.border}`,fontSize:12,fontWeight:700,color:T.txt2,textTransform:'uppercase',letterSpacing:'0.04em'}}>Duplicates</div>
+                <div style={{padding:'14px 18px',display:'flex',gap:8}}>
+                  {['Rename','Skip','Overwrite'].map((o,i)=>(
+                    <div key={o} style={{flex:1,padding:'10px',borderRadius:8,border:`1.5px solid ${i===0?T.accent:T.border}`,background:i===0?T.accentLight:'transparent',cursor:'pointer',textAlign:'center'}}>
+                      <div style={{fontSize:12,fontWeight:700,color:i===0?T.accent:T.txt2}}>{o}</div>
+                      <div style={{fontSize:10,color:T.txt3,marginTop:2}}>{['add _1, _2…','keep original','replace file'][i]}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab==='patterns' && (
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              <div style={{fontSize:13,color:T.txt2}}>Files matching these patterns will be skipped. One pattern per line, case-insensitive.</div>
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,overflow:'hidden'}}>
+                <textarea defaultValue={`.DS_Store\nThumbs.db\ndesktop.ini\n.git\n.gitignore\n.env`}
+                  style={{width:'100%',height:220,padding:'16px 18px',fontFamily:'JetBrains Mono,monospace',fontSize:13,color:T.txt1,border:'none',outline:'none',resize:'none',background:'transparent',lineHeight:1.8}} />
+              </div>
+              <div style={{fontSize:11,color:T.txt3}}>💡 Patterns are matched as substrings within filenames</div>
+            </div>
+          )}
+
+          {tab==='mappings' && (
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              <div style={{fontSize:13,color:T.txt2}}>Format: <code style={{fontFamily:'JetBrains Mono,monospace',background:T.surface2,padding:'1px 6px',borderRadius:4,fontSize:12}}>EXTENSION=Category/Subfolder</code></div>
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,overflow:'hidden'}}>
+                <textarea defaultValue={`PDF=Documents/PDF Files\nDOCX=Documents/Word Files\nTXT=Documents/Text Files\nXLSX=Documents/Excel Files\nJPG=Images/JPG Images\nPNG=Images/PNG Images\nMP4=Videos/MP4 Videos\nMP3=Audio/MP3 Audio\nZIP=Archives/ZIP Archives`}
+                  style={{width:'100%',height:220,padding:'16px 18px',fontFamily:'JetBrains Mono,monospace',fontSize:13,color:T.txt1,border:'none',outline:'none',resize:'none',background:'transparent',lineHeight:1.9}} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{padding:'16px 28px',borderTop:`1px solid ${T.border}`,background:T.surface,display:'flex',justifyContent:'flex-end',gap:8,flexShrink:0}}>
+          <Btn variant="secondary" size="sm">Cancel</Btn>
+          <Btn variant="primary" size="sm">Save changes</Btn>
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+/* ═══════════════════════════════════════
+   SCREEN: Statistics
+═══════════════════════════════════════ */
+const Screen_Stats = () => {
+  const ops = [
+    {folder:'~/Downloads', files:347, size:'2.4 GB', date:'Today, 14:32', status:'done'},
+    {folder:'~/Desktop', files:82, size:'380 MB', date:'Yesterday', status:'done'},
+    {folder:'~/Documents', files:214, size:'1.1 GB', date:'Apr 20', status:'done'},
+    {folder:'~/Downloads/work', files:55, size:'95 MB', date:'Apr 18', status:'done'},
+  ];
+  const cats = [
+    {label:'Documents', pct:36, color:'#16a34a'},
+    {label:'Images', pct:24, color:T.accent},
+    {label:'Videos', pct:9, color:'#7c3aed'},
+    {label:'Code', pct:16, color:'#0891b2'},
+    {label:'Other', pct:15, color:T.txt3},
+  ];
+  return (
+    <Shell width={880} height={560}>
+      <TopNav active="stats" />
+      <div style={{flex:1,display:'flex',flexDirection:'column',padding:'24px 28px',gap:20,overflowY:'auto'}}>
+        {/* Top stats */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:12}}>
+          {[['Total runs','4',T.accent],['Files organized','698',T.green],['Total size','3.97 GB',T.txt1],['This month','Apr 2026',T.txt2]].map(([l,v,c])=>(
+            <div key={l} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'16px 18px'}}>
+              <div style={{fontSize:11,color:T.txt3,marginBottom:6,textTransform:'uppercase',letterSpacing:'0.04em',fontWeight:700}}>{l}</div>
+              <div style={{fontSize:22,fontWeight:800,color:c,letterSpacing:'-0.03em'}}>{v}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{display:'flex',gap:16,flex:1,minHeight:0}}>
+          {/* Breakdown */}
+          <div style={{width:200,flexShrink:0,background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'16px'}}>
+            <div style={{fontSize:12,fontWeight:700,color:T.txt2,marginBottom:14,textTransform:'uppercase',letterSpacing:'0.04em'}}>By Category</div>
+            {cats.map(c=>(
+              <div key={c.label} style={{marginBottom:12}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                  <span style={{fontSize:12,fontWeight:500,color:T.txt1}}>{c.label}</span>
+                  <span style={{fontSize:11,color:T.txt3}}>{c.pct}%</span>
+                </div>
+                <div style={{height:5,background:T.surface2,borderRadius:99}}>
+                  <div style={{height:'100%',width:`${c.pct}%`,background:c.color,borderRadius:99}} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* History */}
+          <div style={{flex:1,background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+            <div style={{padding:'14px 18px',borderBottom:`1px solid ${T.border}`,fontSize:12,fontWeight:700,color:T.txt2,textTransform:'uppercase',letterSpacing:'0.04em'}}>Operation History</div>
+            <div style={{flex:1,overflowY:'auto'}}>
+              {ops.map((o,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'13px 18px',borderBottom:i<ops.length-1?`1px solid ${T.border}`:'none'}}>
+                  <div style={{width:34,height:34,borderRadius:9,background:T.greenLight,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600,color:T.txt1,fontFamily:'JetBrains Mono,monospace',fontSize:12}}>{o.folder}</div>
+                    <div style={{fontSize:11,color:T.txt3,marginTop:2}}>{o.files} files · {o.size}</div>
+                  </div>
+                  <div style={{fontSize:11,color:T.txt3,textAlign:'right'}}>
+                    {o.date}
+                    <div style={{marginTop:3}}><Tag color="green">Done</Tag></div>
+                  </div>
+                  <Btn variant="ghost" size="sm" style={{color:T.txt3,fontSize:11,padding:'4px 10px'}}>Undo</Btn>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+/* ═══════════════════════════════════════
+   SCREEN: Undo Dialog
+═══════════════════════════════════════ */
+const Screen_Undo = () => (
+  <Shell width={600} height={440}>
+    <TopNav active="home" />
+    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'32px'}}>
+      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:'32px',width:'100%',boxShadow:'0 8px 32px rgba(0,0,0,.08)'}}>
+        {/* Icon */}
+        <div style={{width:52,height:52,borderRadius:14,background:T.amberLight,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:20}}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={T.amber} strokeWidth="2" strokeLinecap="round">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+          </svg>
+        </div>
+        <div style={{fontSize:18,fontWeight:800,color:T.txt1,letterSpacing:'-0.02em',marginBottom:8}}>Undo last operation?</div>
+        <div style={{fontSize:13,color:T.txt3,marginBottom:20,lineHeight:1.6}}>
+          This will move <strong style={{color:T.txt2}}>335 files</strong> back to their original locations in <strong style={{color:T.txt2}}>~/Downloads/My Files</strong>.
+        </div>
+
+        {/* Details card */}
+        <div style={{background:T.bg,border:`1px solid ${T.border}`,borderRadius:10,padding:'14px 16px',marginBottom:24,display:'flex',flexDirection:'column',gap:8}}>
+          {[['Operation date','Today at 14:32'],['Files to restore','335'],['Size affected','2.4 GB'],['Source folder','~/Downloads/My Files']].map(([k,v])=>(
+            <div key={k} style={{display:'flex',justifyContent:'space-between'}}>
+              <span style={{fontSize:12,color:T.txt3}}>{k}</span>
+              <span style={{fontSize:12,fontWeight:600,color:T.txt1}}>{v}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{display:'flex',gap:10}}>
+          <Btn variant="secondary" size="md" style={{flex:1,justifyContent:'center'}}>Cancel</Btn>
+          <Btn variant="danger" size="md" style={{flex:1,justifyContent:'center'}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+            Yes, Undo
+          </Btn>
+        </div>
+      </div>
+    </div>
+  </Shell>
+);
+
+/* ═══════════════════════════════════════
+   CANVAS
+═══════════════════════════════════════ */
+const App = () => (
+  <DesignCanvas title="FileType Organizer Pro — Design Mockup">
+
+    <DCSection id="s1" title="Layout Variations (Main Screen)">
+      <DCArtboard id="a1" label="Variation A — Compact Panel" width={700} height={560}>
+        <VariantA_Home />
+      </DCArtboard>
+      <DCArtboard id="a2" label="Variation B — Sidebar Layout" width={880} height={560}>
+        <VariantB_Home />
+      </DCArtboard>
+    </DCSection>
+
+    <DCSection id="s2" title="All Application States">
+      <DCArtboard id="a3" label="Preview Mode" width={720} height={600}>
+        <Screen_Preview />
+      </DCArtboard>
+      <DCArtboard id="a4" label="Progress / Organizing" width={700} height={500}>
+        <Screen_Progress />
+      </DCArtboard>
+      <DCArtboard id="a5" label="Completion Summary" width={700} height={500}>
+        <Screen_Complete />
+      </DCArtboard>
+    </DCSection>
+
+    <DCSection id="s3" title="Settings & Analytics">
+      <DCArtboard id="a6" label="Settings Panel" width={720} height={580}>
+        <Screen_Settings />
+      </DCArtboard>
+      <DCArtboard id="a7" label="Statistics Dashboard" width={880} height={560}>
+        <Screen_Stats />
+      </DCArtboard>
+      <DCArtboard id="a8" label="Undo Confirmation" width={600} height={440}>
+        <Screen_Undo />
+      </DCArtboard>
+    </DCSection>
+
+  </DesignCanvas>
+);
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<div id="root"></div>
+</body>
+</html>

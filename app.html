@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FileType Organizer Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & tokens ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #f8f8f5;
+  --surface:   #ffffff;
+  --surface2:  #f2f2ef;
+  --border:    #e4e4dc;
+  --txt1:      #1a1a17;
+  --txt2:      #5c5c56;
+  --txt3:      #9b9b93;
+  --accent:    #1a6cf0;
+  --acc-h:     #1459d0;
+  --acc-l:     #e8f0fe;
+  --green:     #16a34a;
+  --green-l:   #dcfce7;
+  --amber:     #d97706;
+  --amber-l:   #fef3c7;
+  --red:       #dc2626;
+  --red-l:     #fee2e2;
+  --radius:    12px;
+  --shadow:    0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+}
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--txt1);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── Nav ─────────────────────────────────────────────────── */
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 22px; height: 50px; flex-shrink: 0;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  -webkit-app-region: drag; /* allow dragging the window by the nav */
+}
+.nav * { -webkit-app-region: no-drag; }
+.nav-left { display: flex; align-items: center; gap: 9px; }
+.logo {
+  width: 26px; height: 26px; border-radius: 7px;
+  background: var(--accent); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo svg { display: block; }
+.nav-title { font-size: 14px; font-weight: 700; letter-spacing: -.02em; }
+.nav-badge {
+  background: var(--acc-l); color: var(--accent);
+  font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 99px;
+}
+.nav-tabs { display: flex; gap: 2px; }
+.nav-tab {
+  padding: 5px 13px; border-radius: 7px; font-size: 12px; font-weight: 500;
+  color: var(--txt2); cursor: pointer; border: none; background: transparent;
+  font-family: inherit; transition: all .15s;
+}
+.nav-tab.active { background: var(--acc-l); color: var(--accent); font-weight: 600; }
+.nav-tab:hover:not(.active) { background: var(--surface2); }
+
+/* ── Screens ─────────────────────────────────────────────── */
+.screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* ── Home screen ─────────────────────────────────────────── */
+.home-inner {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 22px 24px; gap: 14px; overflow-y: auto;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: 14px;
+  padding: 36px 24px; text-align: center;
+  background: var(--surface); cursor: pointer;
+  transition: all .2s; flex-shrink: 0;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent); background: var(--acc-l);
+}
+.drop-zone:hover .dz-icon, .drop-zone.drag-over .dz-icon {
+  background: var(--accent); color: white;
+}
+.drop-zone:hover .dz-title, .drop-zone.drag-over .dz-title { color: var(--accent); }
+.dz-icon {
+  width: 48px; height: 48px; border-radius: 13px;
+  background: var(--surface2); display: flex; align-items: center;
+  justify-content: center; margin: 0 auto 14px;
+  transition: all .2s; color: var(--txt3);
+}
+.dz-title { font-size: 15px; font-weight: 700; color: var(--txt1); margin-bottom: 4px; }
+.dz-sub { font-size: 12px; color: var(--txt3); margin-bottom: 18px; }
+.dz-sub span { color: var(--accent); font-weight: 600; cursor: pointer; }
+
+/* Folder strip */
+.folder-strip {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 11px 16px;
+  display: flex; align-items: center; gap: 11px; flex-shrink: 0;
+  display: none;
+}
+.folder-strip.visible { display: flex; }
+.folder-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--acc-l); display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; color: var(--accent);
+}
+.folder-name { font-size: 13px; font-weight: 600; color: var(--txt1); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.folder-meta { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+.ready-badge {
+  background: var(--green-l); color: var(--green);
+  font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px;
+}
+
+/* Stat cards */
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; flex-shrink: 0; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 15px;
+}
+.stat-icon { font-size: 18px; margin-bottom: 7px; }
+.stat-val { font-size: 22px; font-weight: 800; color: var(--txt1); letter-spacing: -.03em; }
+.stat-lbl { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+
+/* Progress */
+.progress-wrap { flex-shrink: 0; }
+.progress-text { font-size: 12px; color: var(--txt3); margin-bottom: 6px; }
+.progress-bar-track {
+  height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; width: 0%; background: var(--accent);
+  border-radius: 99px; transition: width .3s;
+}
+.progress-bar-fill.indeterminate {
+  width: 40%; animation: indeterminate 1.4s ease-in-out infinite;
+}
+@keyframes indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+/* Action buttons */
+.actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; border-radius: 10px; padding: 9px 18px;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.btn-secondary {
+  background: var(--surface); color: var(--txt2);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--surface2); }
+.btn-secondary:disabled { color: var(--txt3); cursor: default; }
+.btn-primary {
+  background: var(--accent); color: white; margin-left: auto;
+  padding: 9px 26px;
+}
+.btn-primary:hover { background: var(--acc-h); }
+.btn-primary:disabled { background: #99b8f5; cursor: default; }
+.btn-danger { background: var(--red); color: white; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-success { background: var(--green); color: white; }
+
+/* ── Preview screen ──────────────────────────────────────── */
+.preview-header {
+  padding: 18px 24px 14px; border-bottom: 1px solid var(--border);
+  background: var(--surface); flex-shrink: 0;
+}
+.preview-header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.preview-pills { display: flex; gap: 7px; flex-wrap: wrap; }
+.pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600;
+}
+.pill-blue { background: var(--acc-l); color: var(--accent); }
+.pill-green { background: var(--green-l); color: var(--green); }
+.pill-amber { background: var(--amber-l); color: var(--amber); }
+.pill-gray { background: var(--surface2); color: var(--txt2); }
+
+.preview-list { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+.preview-group {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.preview-group-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; cursor: pointer; transition: background .1s;
+}
+.preview-group-header:hover { background: var(--surface2); }
+.preview-group-name { font-size: 13px; font-weight: 600; color: var(--txt1); flex: 1; }
+.preview-group-count { font-size: 11px; color: var(--txt3); }
+.preview-group-size { font-size: 11px; color: var(--txt3); min-width: 55px; text-align: right; }
+.preview-chevron { color: var(--txt3); transition: transform .15s; font-size: 11px; }
+.preview-group.open .preview-chevron { transform: rotate(90deg); }
+.preview-files { display: none; padding: 0 14px 10px 38px; }
+.preview-group.open .preview-files { display: block; }
+.preview-file { font-size: 12px; color: var(--txt2); padding: 3px 0; }
+
+.preview-footer {
+  padding: 14px 24px; border-top: 1px solid var(--border);
+  background: var(--surface); display: flex; gap: 8px; flex-shrink: 0;
+}
+
+/* ── Progress screen ─────────────────────────────────────── */
+.progress-screen-inner {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 26px; padding: 32px 48px;
+}
+.prog-icon {
+  width: 60px; height: 60px; border-radius: 16px;
+  background: var(--acc-l); display: flex; align-items: center; justify-content: center;
+  color: var(--accent);
+}
+.prog-title { font-size: 20px; font-weight: 800; letter-spacing: -.03em; text-align: center; }
+.prog-sub { font-size: 13px; color: var(--txt3); text-align: center; }
+.big-progress { width: 100%; }
+.big-progress-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.big-progress-label { font-size: 12px; font-weight: 600; color: var(--txt2); }
+.big-progress-pct { font-size: 12px; color: var(--txt3); }
+.big-progress-track { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.big-progress-fill { height: 100%; width: 0%; border-radius: 99px; transition: width .3s; background: linear-gradient(90deg, var(--accent), #5b8ff0); }
+.prog-file { font-size: 11px; color: var(--txt3); margin-top: 7px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+.steps { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.step { display: flex; align-items: center; gap: 12px; }
+.step-dot {
+  width: 22px; height: 22px; border-radius: 99px; flex-shrink: 0;
+  border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+  font-size: 10px; transition: all .3s;
+}
+.step-dot.done { background: var(--green); border-color: var(--green); color: white; }
+.step-dot.active { background: var(--acc-l); border-color: var(--accent); }
+.step-dot.active::after { content: ''; width: 8px; height: 8px; border-radius: 99px; background: var(--accent); }
+.step-label { font-size: 13px; font-weight: 500; color: var(--txt3); }
+.step-label.done { color: var(--green); }
+.step-label.active { color: var(--txt1); font-weight: 600; }
+
+/* ── Complete screen ─────────────────────────────────────── */
+.complete-inner {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 22px; padding: 32px 48px;
+}
+.complete-icon {
+  width: 60px; height: 60px; border-radius: 16px;
+  background: var(--green-l); display: flex; align-items: center;
+  justify-content: center; color: var(--green);
+}
+.complete-stats { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; width: 100%; }
+.complete-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; text-align: center;
+}
+.complete-stat-val { font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+.complete-stat-lbl { font-size: 11px; color: var(--txt3); margin-top: 3px; }
+.output-path {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 15px;
+  display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--txt2);
+}
+.output-path-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link-btn {
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  border: none; background: transparent; cursor: pointer; font-family: inherit;
+  padding: 3px 8px; border-radius: 6px;
+}
+.link-btn:hover { background: var(--acc-l); }
+
+/* ── Stats screen ────────────────────────────────────────── */
+.stats-inner { flex: 1; display: flex; flex-direction: column; padding: 20px 24px; gap: 16px; overflow-y: auto; }
+.stats-top { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; flex-shrink: 0; }
+.stats-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.stats-card-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--txt3); margin-bottom: 7px; }
+.stats-card-val { font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+.stats-history { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.stats-history-header { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--txt2); flex-shrink: 0; }
+.history-list { overflow-y: auto; flex: 1; }
+.history-item { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--border); }
+.history-item:last-child { border-bottom: none; }
+.history-check { width: 32px; height: 32px; border-radius: 9px; background: var(--green-l); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--green); }
+.history-folder { font-size: 12px; font-weight: 600; color: var(--txt1); font-family: 'JetBrains Mono', monospace; }
+.history-meta { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+.history-date { font-size: 11px; color: var(--txt3); text-align: right; margin-left: auto; }
+.empty-state { padding: 40px; text-align: center; color: var(--txt3); font-size: 13px; }
+
+/* Category breakdown */
+.stats-category-breakdown { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; flex-shrink: 0; max-height: 320px; display: flex; flex-direction: column; }
+.category-breakdown-content { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; }
+.category-bar { display: flex; align-items: center; gap: 12px; }
+.category-bar-label { font-size: 12px; font-weight: 600; color: var(--txt2); min-width: 80px; }
+.category-bar-track { flex: 1; height: 24px; background: var(--surface2); border-radius: 6px; overflow: hidden; position: relative; }
+.category-bar-fill { height: 100%; border-radius: 6px; transition: width .3s; display: flex; align-items: center; padding: 0 8px; }
+.category-bar-text { font-size: 11px; font-weight: 700; color: white; white-space: nowrap; }
+.category-bar-count { font-size: 11px; color: var(--txt3); min-width: 80px; text-align: right; }
+
+/* ── Settings screen ─────────────────────────────────────── */
+.settings-inner { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.settings-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; padding: 0 20px; }
+.settings-tab { padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--txt3); cursor: pointer; border: none; background: transparent; font-family: inherit; border-bottom: 2px solid transparent; transition: all .15s; }
+.settings-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+.settings-tab-content { display: none; flex: 1; overflow-y: auto; padding: 20px 24px; flex-direction: column; gap: 14px; }
+.settings-tab-content.active { display: flex; }
+.settings-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.settings-block-header { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--txt2); background: var(--surface2); }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.settings-row:last-child { border-bottom: none; }
+.settings-row-info h4 { font-size: 13px; font-weight: 600; color: var(--txt1); }
+.settings-row-info p { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+.settings-input { font-size: 12px; padding: 7px 11px; border: 1px solid var(--border); border-radius: 8px; font-family: 'JetBrains Mono', monospace; color: var(--txt1); background: var(--bg); outline: none; width: 220px; }
+.settings-input:focus { border-color: var(--accent); }
+.toggle { width: 36px; height: 20px; border-radius: 99px; background: var(--border); position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+.toggle.on { background: var(--accent); }
+.toggle::after { content: ''; width: 16px; height: 16px; border-radius: 99px; background: white; position: absolute; top: 2px; left: 2px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.toggle.on::after { left: 18px; }
+.dup-options { display: flex; gap: 8px; }
+.dup-opt { flex: 1; padding: 9px 10px; border-radius: 8px; border: 1.5px solid var(--border); text-align: center; cursor: pointer; transition: all .15s; }
+.dup-opt.active { border-color: var(--accent); background: var(--acc-l); }
+.dup-opt-label { font-size: 12px; font-weight: 700; color: var(--txt2); }
+.dup-opt.active .dup-opt-label { color: var(--accent); }
+.dup-opt-sub { font-size: 10px; color: var(--txt3); margin-top: 2px; }
+.settings-textarea { width: 100%; min-height: 200px; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 14px 16px; border: none; outline: none; background: transparent; color: var(--txt1); line-height: 1.8; }
+.settings-footer { padding: 14px 24px; border-top: 1px solid var(--border); background: var(--surface); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ── Toast ────────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--txt1); color: white; padding: 10px 20px; border-radius: 99px;
+  font-size: 13px; font-weight: 600; opacity: 0; transition: all .3s; z-index: 1000;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.green { background: var(--green); }
+.toast.red { background: var(--red); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Nav ── -->
+  <nav class="nav">
+    <div class="nav-left">
+      <div class="logo">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <rect x="0" y="0" width="5" height="5" rx="1.5" fill="white"/>
+          <rect x="7" y="0" width="5" height="5" rx="1.5" fill="white" opacity=".6"/>
+          <rect x="0" y="7" width="5" height="5" rx="1.5" fill="white" opacity=".6"/>
+          <rect x="7" y="7" width="5" height="5" rx="1.5" fill="white" opacity=".3"/>
+        </svg>
+      </div>
+      <span class="nav-title">FileType Organizer</span>
+      <span class="nav-badge">Pro</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="goTo('home')">Organizer</button>
+      <button class="nav-tab" onclick="goTo('stats')">Statistics</button>
+      <button class="nav-tab" onclick="goTo('settings')">Settings</button>
+    </div>
+    <span style="font-size:11px;color:var(--txt3);">by Kahilu Chipango</span>
+  </nav>
+
+  <!-- ═══════════════ HOME ═══════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="home-inner">
+
+      <!-- Drop zone -->
+      <div class="drop-zone" id="dropZone"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"
+           ondrop="onDrop(event)" onclick="browseFolder()">
+        <div class="dz-icon" id="dzIcon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <div class="dz-title" id="dzTitle">Drop a folder here</div>
+        <div class="dz-sub">or <span onclick="event.stopPropagation(); browseFolder()">browse your computer</span></div>
+      </div>
+
+      <!-- Folder strip -->
+      <div class="folder-strip" id="folderStrip">
+        <div class="folder-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <div class="folder-name" id="folderName">—</div>
+          <div class="folder-meta" id="folderMeta">Scanning…</div>
+        </div>
+        <span class="ready-badge">Ready</span>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stats-row" id="statCards">
+        <div class="stat-card"><div class="stat-icon">🖼</div><div class="stat-val" id="stat-images">—</div><div class="stat-lbl">Images</div></div>
+        <div class="stat-card"><div class="stat-icon">📄</div><div class="stat-val" id="stat-docs">—</div><div class="stat-lbl">Documents</div></div>
+        <div class="stat-card"><div class="stat-icon">🎬</div><div class="stat-val" id="stat-videos">—</div><div class="stat-lbl">Videos</div></div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-text" id="progText">Ready to organize files</div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="progFill"></div></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button class="btn btn-secondary" id="previewBtn" onclick="showPreview()" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview
+        </button>
+        <button class="btn btn-secondary" id="undoBtn" onclick="doUndo()" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Undo
+        </button>
+        <button class="btn btn-primary" id="organizeBtn" onclick="startOrganize()" disabled>
+          Organize Now →
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ PREVIEW ═══════════════ -->
+  <div id="screen-preview" class="screen">
+    <div class="preview-header">
+      <div class="preview-header-top">
+        <div>
+          <div style="font-size:16px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;">Preview Changes</div>
+          <div style="font-size:12px;color:var(--txt3);" id="previewSub">Scanning…</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" onclick="goTo('home')">Cancel</button>
+          <button class="btn btn-primary" onclick="[goTo('home'), startOrganize()]">Confirm & Organize</button>
+        </div>
+      </div>
+      <div class="preview-pills" id="previewPills"></div>
+    </div>
+    <div class="preview-list" id="previewList"></div>
+  </div>
+
+  <!-- ═══════════════ ORGANIZING ═══════════════ -->
+  <div id="screen-progress" class="screen">
+    <div class="progress-screen-inner">
+      <div class="prog-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+      </div>
+      <div>
+        <div class="prog-title">Organizing files…</div>
+        <div class="prog-sub" id="progSubText">Moving files into sorted categories</div>
+      </div>
+      <div class="big-progress" style="width:100%">
+        <div class="big-progress-header">
+          <span class="big-progress-label" id="bigProgLabel">Starting…</span>
+          <span class="big-progress-pct" id="bigProgPct">0%</span>
+        </div>
+        <div class="big-progress-track"><div class="big-progress-fill" id="bigProgFill"></div></div>
+        <div class="prog-file" id="progFile">—</div>
+      </div>
+      <div class="steps" id="steps">
+        <div class="step"><div class="step-dot" id="step0"></div><span class="step-label" id="step0-lbl">Scanning folder</span></div>
+        <div class="step"><div class="step-dot" id="step1"></div><span class="step-label" id="step1-lbl">Creating folder structure</span></div>
+        <div class="step"><div class="step-dot" id="step2"></div><span class="step-label" id="step2-lbl">Moving files</span></div>
+        <div class="step"><div class="step-dot" id="step3"></div><span class="step-label" id="step3-lbl">Finishing up</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ COMPLETE ═══════════════ -->
+  <div id="screen-complete" class="screen">
+    <div class="complete-inner">
+      <div class="complete-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:22px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;">Organization complete!</div>
+        <div style="font-size:13px;color:var(--txt3);">All files have been sorted into <span id="masterFolderName" style="font-weight:600;color:var(--txt2);"></span></div>
+      </div>
+      <div class="complete-stats">
+        <div class="complete-stat"><div class="complete-stat-val" id="res-moved" style="color:var(--green);">0</div><div class="complete-stat-lbl">Files moved</div></div>
+        <div class="complete-stat"><div class="complete-stat-val" id="res-renamed" style="color:var(--accent);">0</div><div class="complete-stat-lbl">Renamed</div></div>
+        <div class="complete-stat"><div class="complete-stat-val" id="res-skipped" style="color:var(--amber);">0</div><div class="complete-stat-lbl">Skipped</div></div>
+        <div class="complete-stat"><div class="complete-stat-val" id="res-size" style="color:var(--txt1);">0 MB</div><div class="complete-stat-lbl">Total size</div></div>
+      </div>
+      <div class="output-path">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="output-path-text" id="outputPath">—</span>
+        <button class="link-btn" id="openFolderBtn">Open →</button>
+      </div>
+      <div style="font-size:11px;color:var(--txt3);" id="completeTime">—</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-secondary" id="completeUndoBtn" onclick="doUndo()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Undo
+        </button>
+        <button class="btn btn-primary" onclick="resetHome()">Organize another folder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ STATS ═══════════════ -->
+  <div id="screen-stats" class="screen">
+    <div class="stats-inner">
+      <div class="stats-top" id="statsTop">
+        <div class="stats-card"><div class="stats-card-label">Total runs</div><div class="stats-card-val" id="st-runs" style="color:var(--accent);">—</div></div>
+        <div class="stats-card"><div class="stats-card-label">Files organized</div><div class="stats-card-val" id="st-files" style="color:var(--green);">—</div></div>
+        <div class="stats-card"><div class="stats-card-label">Total size</div><div class="stats-card-val" id="st-size">—</div></div>
+        <div class="stats-card"><div class="stats-card-label">Last run</div><div class="stats-card-val" id="st-last" style="font-size:14px;">—</div></div>
+      </div>
+      <!-- Category Breakdown -->
+      <div class="stats-category-breakdown">
+        <div class="stats-history-header">Category Breakdown</div>
+        <div class="category-breakdown-content" id="categoryBreakdown">
+          <div class="empty-state">No data available yet.</div>
+        </div>
+      </div>
+      <div class="stats-history">
+        <div class="stats-history-header">Operation History</div>
+        <div class="history-list" id="historyList">
+          <div class="empty-state">No operations recorded yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SETTINGS ═══════════════ -->
+  <div id="screen-settings" class="screen">
+    <div class="settings-inner">
+      <div class="settings-tabs">
+        <button class="settings-tab active" onclick="switchSettingsTab('general')">General</button>
+        <button class="settings-tab" onclick="switchSettingsTab('patterns')">Exclude Patterns</button>
+        <button class="settings-tab" onclick="switchSettingsTab('extmap')">Extension Map</button>
+      </div>
+
+      <!-- General -->
+      <div id="stab-general" class="settings-tab-content active">
+        <div class="settings-block">
+          <div class="settings-block-header">Output</div>
+          <div class="settings-row">
+            <div class="settings-row-info"><h4>Master folder name</h4><p>All organized files are placed here</p></div>
+            <input class="settings-input" id="masterFolderInput" value="Organised Files - FTO">
+          </div>
+        </div>
+        <div class="settings-block">
+          <div class="settings-block-header">Behavior</div>
+          <div class="settings-row">
+            <div class="settings-row-info"><h4>Recursive organization</h4><p>Also process files in subdirectories</p></div>
+            <div class="toggle" id="toggle-recursive" onclick="toggleSetting('recursive')"></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info"><h4>Auto-organize</h4><p>Monitor folder every 30 seconds</p></div>
+            <div class="toggle" id="toggle-auto" onclick="toggleSetting('auto')"></div>
+          </div>
+        </div>
+        <div class="settings-block">
+          <div class="settings-block-header">Duplicate handling</div>
+          <div style="padding:14px 18px;">
+            <div class="dup-options" id="dupOptions">
+              <div class="dup-opt active" onclick="setDup('rename')">
+                <div class="dup-opt-label">Rename</div>
+                <div class="dup-opt-sub">add _1, _2…</div>
+              </div>
+              <div class="dup-opt" onclick="setDup('skip')">
+                <div class="dup-opt-label">Skip</div>
+                <div class="dup-opt-sub">keep original</div>
+              </div>
+              <div class="dup-opt" onclick="setDup('overwrite')">
+                <div class="dup-opt-label">Overwrite</div>
+                <div class="dup-opt-sub">replace file</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patterns -->
+      <div id="stab-patterns" class="settings-tab-content">
+        <div class="settings-block" style="flex:1;display:flex;flex-direction:column;">
+          <div class="settings-block-header">Exclude Patterns — one per line, matched as filename substrings</div>
+          <textarea class="settings-textarea" id="patternsArea" spellcheck="false"></textarea>
+        </div>
+      </div>
+
+      <!-- Extension map -->
+      <div id="stab-extmap" class="settings-tab-content">
+        <div class="settings-block" style="flex:1;display:flex;flex-direction:column;">
+          <div class="settings-block-header">Extension Map — format: EXTENSION=Category/Subfolder</div>
+          <textarea class="settings-textarea" id="extMapArea" spellcheck="false" style="min-height:300px;"></textarea>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button class="btn btn-secondary" onclick="loadSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .app -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   Bridge — connects JS to Python via window.pywebview.api
+   In the browser preview, all API calls return mock data.
+═══════════════════════════════════════════════════════ */
+const IS_PYWEBVIEW = typeof window.pywebview !== 'undefined';
+
+const api = IS_PYWEBVIEW ? window.pywebview.api : {
+  /* ── Mock API for browser preview ── */
+  pick_folder: async () => ({ path: '/Users/demo/Downloads', name: 'Downloads' }),
+  scan_folder: async (p) => ({
+    categories: {
+      Images:    { count: 84,  size: 860000000, icon: '🖼' },
+      Documents: { count: 126, size: 145000000, icon: '📄' },
+      Videos:    { count: 31,  size: 1100000000, icon: '🎬' },
+      Audio:     { count: 18,  size: 72000000, icon: '🎵' },
+      Code:      { count: 54,  size: 4200000, icon: '💻' },
+    },
+    total_files: 313, total_size: 2181200000, total_size_mb: 2080.5,
+  }),
+  preview_folder: async (p) => ({
+    groups: {
+      'Documents/PDF Files': { files: ['report.pdf','invoice.pdf','contract.pdf','notes.pdf'], size: 14200000 },
+      'Images/JPG Images':   { files: ['IMG_4521.jpg','photo.jpg','banner.jpg','hero.jpg','bg.jpg'], size: 86000000 },
+      'Videos/MP4 Videos':   { files: ['screen_rec.mp4','tutorial.mp4'], size: 1100000000 },
+      'Code/Python':         { files: ['main.py','utils.py','config.py','api.py'], size: 420000 },
+      'Archives/ZIP Archives': { files: ['backup.zip','assets.zip'], size: 220000000 },
+    },
+    total_files: 18, total_size_mb: 1353.1, skipped: 2,
+  }),
+  organize: async (p) => {
+    // Simulate progress events
+    let i = 0;
+    const total = 18;
+    const files = ['report.pdf','IMG_4521.jpg','main.py','tutorial.mp4','backup.zip'];
+    const iv = setInterval(() => {
+      i++;
+      const pct = Math.round(i / total * 100);
+      window.__bridge(JSON.stringify({ event: 'progress', data: { current: i, total, pct, file: files[i % files.length] } }));
+      if (i >= total) {
+        clearInterval(iv);
+        window.__bridge(JSON.stringify({ event: 'done', data: { moved: 16, renamed: 2, skipped: 2, size_mb: 1353.1, master_folder: 'Organised Files - FTO', timestamp: new Date().toLocaleTimeString(), can_undo: true } }));
+      }
+    }, 200);
+    return { status: 'started' };
+  },
+  undo: async () => ({ restored: 16, failed: 0, has_more: false }),
+  get_operation_logs: async () => [
+    { timestamp: new Date().toISOString(), source_folder: '/Users/demo/Downloads', files_count: 16, size_mb: 1353.1 },
+    { timestamp: new Date(Date.now() - 86400000).toISOString(), source_folder: '/Users/demo/Desktop', files_count: 82, size_mb: 380.2 },
+  ],
+  get_category_stats: async () => ({
+    categories: {
+      'Images': { count: 48, size: 128000000, percentage: 28.6, size_mb: 122.1 },
+      'Documents': { count: 42, size: 86000000, percentage: 25.0, size_mb: 82.0 },
+      'Videos': { count: 22, size: 950000000, percentage: 13.1, size_mb: 906.0 },
+      'Code': { count: 31, size: 4200000, percentage: 18.5, size_mb: 4.0 },
+      'Archives': { count: 15, size: 220000000, percentage: 8.9, size_mb: 209.8 },
+      'Audio': { count: 10, size: 72000000, percentage: 6.0, size_mb: 68.7 },
+    },
+    total_files: 168,
+    total_size_mb: 1392.6,
+  }),
+  get_settings: async () => ({
+    master_folder_name: 'Organised Files - FTO',
+    handle_duplicates: 'rename',
+    recursive: false,
+    auto_organize: false,
+    exclude_patterns: ['.DS_Store','Thumbs.db','desktop.ini','.git'],
+  }),
+  save_settings: async (s) => ({ status: 'ok' }),
+  get_ext_map_text: async () => `PDF=Documents/PDF Files\nDOCX=Documents/Word Files\nJPG=Images/JPG Images\nMP4=Videos/MP4 Videos\nMP3=Audio/MP3 Audio\nZIP=Archives/ZIP Archives\nPY=Code/Python`,
+  save_ext_map: async (t) => ({ status: 'ok' }),
+  open_folder_in_explorer: async (p) => ({ status: 'ok' }),
+};
+
+/* ── Event bridge — Python pushes events via evaluate_js ── */
+window.__bridge = (payload) => {
+  const { event, data } = JSON.parse(payload);
+  handlers[event]?.(data);
+};
+
+/* ── App state ── */
+let selectedFolder = null;
+let canUndo = false;
+let currentDup = 'rename';
+let settingsState = {};
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['home','stats','settings'][i] === screen);
+  });
+  if (screen === 'stats') loadStats();
+  if (screen === 'settings') loadSettings();
+}
+
+/* ══════════════════════════════════════════
+   DROP ZONE
+══════════════════════════════════════════ */
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('drag-over');
+  document.getElementById('dzTitle').textContent = 'Drop folder here!';
+}
+function onDragLeave(e) {
+  document.getElementById('dropZone').classList.remove('drag-over');
+  document.getElementById('dzTitle').textContent = 'Drop a folder here';
+}
+async function onDrop(e) {
+  e.preventDefault();
+  onDragLeave(e);
+  if (!IS_PYWEBVIEW) {
+    // In browser, simulate a folder pick
+    await setFolder({ path: '/Users/demo/Downloads', name: 'Downloads' });
+    return;
+  }
+  const items = e.dataTransfer?.items;
+  if (items) {
+    for (const item of items) {
+      const entry = item.webkitGetAsEntry?.();
+      if (entry?.isDirectory) {
+        await setFolder({ path: entry.fullPath, name: entry.name });
+        return;
+      }
+    }
+  }
+  toast('Please drop a folder, not a file', 'red');
+}
+
+async function browseFolder() {
+  const result = await api.pick_folder();
+  if (result) await setFolder(result);
+}
+
+async function setFolder(folder) {
+  selectedFolder = folder.path;
+  document.getElementById('folderStrip').classList.add('visible');
+  document.getElementById('folderName').textContent = folder.name || folder.path.split('/').pop();
+  document.getElementById('folderMeta').textContent = 'Scanning…';
+  document.getElementById('progText').textContent = 'Scanning folder…';
+  document.getElementById('previewBtn').disabled = false;
+  document.getElementById('organizeBtn').disabled = false;
+
+  const scan = await api.scan_folder(folder.path);
+  if (scan.error) { toast(scan.error, 'red'); return; }
+
+  // Update stat cards
+  const cats = scan.categories || {};
+  document.getElementById('stat-images').textContent = (cats.Images?.count ?? 0);
+  document.getElementById('stat-docs').textContent = (cats.Documents?.count ?? 0);
+  document.getElementById('stat-videos').textContent = (cats.Videos?.count ?? 0);
+
+  const mb = scan.total_size_mb;
+  const sizeStr = mb >= 1000 ? (mb / 1024).toFixed(1) + ' GB' : mb.toFixed(1) + ' MB';
+  document.getElementById('folderMeta').textContent = `${scan.total_files} files · ${sizeStr}`;
+  document.getElementById('progText').textContent = 'Folder selected — ready to organize!';
+}
+
+/* ══════════════════════════════════════════
+   PREVIEW
+══════════════════════════════════════════ */
+async function showPreview() {
+  if (!selectedFolder) return;
+  goTo('preview');
+  document.getElementById('previewList').innerHTML = '<div style="padding:20px;color:var(--txt3);">Loading…</div>';
+
+  const data = await api.preview_folder(selectedFolder);
+  if (data.error) { toast(data.error, 'red'); goTo('home'); return; }
+
+  document.getElementById('previewSub').textContent =
+    `${data.total_files} files will be moved · ${data.total_size_mb} MB total`;
+
+  const pills = document.getElementById('previewPills');
+  pills.innerHTML = `
+    <span class="pill pill-blue">${data.total_files} files</span>
+    <span class="pill pill-blue">${data.total_size_mb} MB</span>
+    <span class="pill pill-gray">${Object.keys(data.groups).length} categories</span>
+    ${data.skipped > 0 ? `<span class="pill pill-amber">${data.skipped} skipped</span>` : ''}
+  `;
+
+  const list = document.getElementById('previewList');
+  list.innerHTML = '';
+  for (const [folder, info] of Object.entries(data.groups)) {
+    const sizeMb = (info.size / 1_048_576).toFixed(1);
+    const el = document.createElement('div');
+    el.className = 'preview-group';
+    el.innerHTML = `
+      <div class="preview-group-header" onclick="toggleGroup(this.parentElement)">
+        <span style="font-size:15px;">📁</span>
+        <span class="preview-group-name">${folder}</span>
+        <span class="preview-group-count">${info.files.length} files</span>
+        <span class="preview-group-size">${sizeMb} MB</span>
+        <span class="preview-chevron">›</span>
+      </div>
+      <div class="preview-files">
+        ${info.files.slice(0, 10).map(f => `<div class="preview-file">· ${f}</div>`).join('')}
+        ${info.files.length > 10 ? `<div class="preview-file" style="color:var(--txt3);">… and ${info.files.length - 10} more</div>` : ''}
+      </div>
+    `;
+    list.appendChild(el);
+  }
+  // Open first group
+  list.querySelector('.preview-group')?.classList.add('open');
+}
+
+function toggleGroup(el) { el.classList.toggle('open'); }
+
+/* ══════════════════════════════════════════
+   ORGANIZE
+══════════════════════════════════════════ */
+async function startOrganize() {
+  if (!selectedFolder) return;
+
+  // Switch to progress screen
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-progress').classList.add('active');
+
+  // Reset steps
+  [0,1,2,3].forEach(i => {
+    document.getElementById(`step${i}`).className = 'step-dot';
+    document.getElementById(`step${i}-lbl`).className = 'step-label';
+  });
+  setStep(0, 'done');
+  setStep(1, 'done');
+  setStep(2, 'active');
+
+  document.getElementById('bigProgFill').style.width = '0%';
+  document.getElementById('bigProgPct').textContent = '0%';
+  document.getElementById('bigProgLabel').textContent = 'Starting…';
+
+  await api.organize(selectedFolder);
+}
+
+function setStep(i, state) {
+  const dot = document.getElementById(`step${i}`);
+  const lbl = document.getElementById(`step${i}-lbl`);
+  dot.className = `step-dot ${state}`;
+  lbl.className = `step-label ${state}`;
+  if (state === 'done') dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+  else dot.innerHTML = '';
+}
+
+const handlers = {
+  progress_start({ total }) {
+    document.getElementById('progSubText').textContent = `Moving ${total} files into sorted categories`;
+    document.getElementById('bigProgLabel').textContent = `0 of ${total} files`;
+  },
+  progress({ current, total, pct, file }) {
+    document.getElementById('bigProgFill').style.width = pct + '%';
+    document.getElementById('bigProgPct').textContent = pct + '%';
+    document.getElementById('bigProgLabel').textContent = `${current} of ${total} files`;
+    document.getElementById('progFile').textContent = file || '';
+    if (pct > 80) setStep(2, 'done'), setStep(3, 'active');
+  },
+  done(data) {
+    setStep(2, 'done'); setStep(3, 'done');
+    canUndo = data.can_undo;
+    // Populate complete screen
+    document.getElementById('res-moved').textContent = data.moved;
+    document.getElementById('res-renamed').textContent = data.renamed;
+    document.getElementById('res-skipped').textContent = data.skipped;
+    document.getElementById('res-size').textContent = data.size_mb + ' MB';
+    document.getElementById('masterFolderName').textContent = data.master_folder;
+    document.getElementById('outputPath').textContent = selectedFolder + '/' + data.master_folder;
+    document.getElementById('completeTime').textContent = `Completed at ${data.timestamp}`;
+    document.getElementById('completeUndoBtn').disabled = !canUndo;
+    document.getElementById('openFolderBtn').onclick = () =>
+      api.open_folder_in_explorer(selectedFolder + '/' + data.master_folder);
+
+    // Also update home screen undo btn
+    document.getElementById('undoBtn').disabled = !canUndo;
+    document.getElementById('progText').textContent = `✓ ${data.moved} files organized (${data.size_mb} MB)`;
+    document.getElementById('progFill').style.width = '100%';
+
+    setTimeout(() => {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-complete').classList.add('active');
+    }, 600);
+  },
+  error({ message }) {
+    goTo('home');
+    toast('Error: ' + message, 'red');
+    document.getElementById('organizeBtn').disabled = false;
+    document.getElementById('previewBtn').disabled = false;
+  },
+};
+
+/* ══════════════════════════════════════════
+   UNDO
+══════════════════════════════════════════ */
+async function doUndo() {
+  const result = await api.undo();
+  if (result.error) { toast(result.error, 'red'); return; }
+  toast(`✓ ${result.restored} files restored`, 'green');
+  if (!result.has_more) {
+    document.getElementById('undoBtn').disabled = true;
+    document.getElementById('completeUndoBtn').disabled = true;
+  }
+  goTo('home');
+}
+
+function resetHome() {
+  selectedFolder = null;
+  document.getElementById('folderStrip').classList.remove('visible');
+  document.getElementById('stat-images').textContent = '—';
+  document.getElementById('stat-docs').textContent = '—';
+  document.getElementById('stat-videos').textContent = '—';
+  document.getElementById('progText').textContent = 'Ready to organize files';
+  document.getElementById('progFill').style.width = '0%';
+  document.getElementById('organizeBtn').disabled = true;
+  document.getElementById('previewBtn').disabled = true;
+  goTo('home');
+}
+
+/* ══════════════════════════════════════════
+   STATISTICS
+══════════════════════════════════════════ */
+async function loadStats() {
+  const logs = await api.get_operation_logs();
+  document.getElementById('st-runs').textContent = logs.length || '0';
+  const totalFiles = logs.reduce((a, l) => a + (l.files_count || 0), 0);
+  const totalMb = logs.reduce((a, l) => a + (l.size_mb || 0), 0);
+  document.getElementById('st-files').textContent = totalFiles;
+  document.getElementById('st-size').textContent = totalMb >= 1000 ? (totalMb / 1024).toFixed(1) + ' GB' : totalMb.toFixed(1) + ' MB';
+
+  const list = document.getElementById('historyList');
+  if (!logs.length) {
+    list.innerHTML = '<div class="empty-state">No operations recorded yet.<br>Organize your first folder to see history here.</div>';
+    document.getElementById('st-last').textContent = '—';
+    return;
+  }
+  const last = logs[0];
+  const lastDate = new Date(last.timestamp);
+  document.getElementById('st-last').textContent = lastDate.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+
+  list.innerHTML = logs.map(l => {
+    const d = new Date(l.timestamp);
+    const dateStr = d.toLocaleDateString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const folder = l.source_folder.split('/').pop() || l.source_folder;
+    return `
+      <div class="history-item">
+        <div class="history-check">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="history-folder">${l.source_folder}</div>
+          <div class="history-meta">${l.files_count} files · ${l.size_mb} MB</div>
+        </div>
+        <div class="history-date">${dateStr}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Load category breakdown
+  const catStats = await api.get_category_stats();
+  const catContainer = document.getElementById('categoryBreakdown');
+
+  if (!catStats.categories || Object.keys(catStats.categories).length === 0) {
+    catContainer.innerHTML = '<div class="empty-state">No category data available yet.</div>';
+    return;
+  }
+
+  const categoryColors = {
+    'Documents': '#1a6cf0',
+    'Images': '#16a34a',
+    'Videos': '#d97706',
+    'Audio': '#dc2626',
+    'Code': '#7c3aed',
+    'Archives': '#0891b2',
+    'Applications': '#db2777',
+    'Fonts': '#65a30d',
+    'Other': '#6b7280',
+  };
+
+  catContainer.innerHTML = Object.entries(catStats.categories).map(([category, data]) => {
+    const color = categoryColors[category] || '#6b7280';
+    return `
+      <div class="category-bar">
+        <div class="category-bar-label">${category}</div>
+        <div class="category-bar-track">
+          <div class="category-bar-fill" style="width: ${data.percentage}%; background: ${color};">
+            <span class="category-bar-text">${data.percentage}%</span>
+          </div>
+        </div>
+        <div class="category-bar-count">${data.count} files · ${data.size_mb} MB</div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════ */
+async function loadSettings() {
+  const s = await api.get_settings();
+  settingsState = { ...s };
+  document.getElementById('masterFolderInput').value = s.master_folder_name || '';
+  document.getElementById('toggle-recursive').className = 'toggle' + (s.recursive ? ' on' : '');
+  document.getElementById('toggle-auto').className = 'toggle' + (s.auto_organize ? ' on' : '');
+  setDup(s.handle_duplicates || 'rename');
+  document.getElementById('patternsArea').value = (s.exclude_patterns || []).join('\n');
+
+  const extMap = await api.get_ext_map_text();
+  document.getElementById('extMapArea').value = extMap;
+}
+
+function toggleSetting(key) {
+  if (key === 'recursive') {
+    settingsState.recursive = !settingsState.recursive;
+    document.getElementById('toggle-recursive').className = 'toggle' + (settingsState.recursive ? ' on' : '');
+  } else {
+    settingsState.auto_organize = !settingsState.auto_organize;
+    document.getElementById('toggle-auto').className = 'toggle' + (settingsState.auto_organize ? ' on' : '');
+  }
+}
+
+function setDup(val) {
+  currentDup = val;
+  const opts = ['rename','skip','overwrite'];
+  document.querySelectorAll('.dup-opt').forEach((el, i) => {
+    el.classList.toggle('active', opts[i] === val);
+  });
+}
+
+async function saveSettings() {
+  const newSettings = {
+    master_folder_name: document.getElementById('masterFolderInput').value.trim() || 'Organised Files - FTO',
+    handle_duplicates: currentDup,
+    recursive: settingsState.recursive,
+    auto_organize: settingsState.auto_organize,
+    exclude_patterns: document.getElementById('patternsArea').value.split('\n').filter(l => l.trim()),
+  };
+  await api.save_settings(newSettings);
+  await api.save_ext_map(document.getElementById('extMapArea').value);
+  toast('Settings saved', 'green');
+}
+
+function switchSettingsTab(tab) {
+  document.querySelectorAll('.settings-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['general','patterns','extmap'][i] === tab);
+  });
+  document.querySelectorAll('.settings-tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('stab-' + tab).classList.add('active');
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+/* ── Init ── */
+window.addEventListener('pywebviewready', loadSettings);
+if (!IS_PYWEBVIEW) loadSettings();
+</script>
+</body>
+</html>
